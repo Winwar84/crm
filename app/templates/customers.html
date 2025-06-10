@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Clienti - CRM Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-headset"></i> CRM Pro</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                <li><a href="/tickets"><i class="fas fa-ticket-alt"></i> Ticket</a></li>
+                <li><a href="/customers" class="active"><i class="fas fa-users"></i> Clienti</a></li>
+                <li><a href="/agents"><i class="fas fa-user-tie"></i> Agenti</a></li>
+                <li><a href="/settings"><i class="fas fa-cogs"></i> Impostazioni</a></li>
+                <li><a href="/reports"><i class="fas fa-chart-bar"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Gestione Clienti</h1>
+                <div class="header-right">
+                    <div class="user-display"></div>
+                    <button class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                    <div class="customer-actions">
+                        <button class="btn primary" onclick="openNewCustomerModal()">
+                            <i class="fas fa-plus"></i> Nuovo Cliente
+                        </button>
+                        <button class="btn secondary" onclick="exportCustomers()">
+                            <i class="fas fa-download"></i> Esporta
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="customers-filters">
+                <div class="filter-group">
+                    <label for="statusFilter">Stato:</label>
+                    <select id="statusFilter" onchange="filterCustomers()">
+                        <option value="">Tutti</option>
+                        <option value="Active">Attivi</option>
+                        <option value="Inactive">Inattivi</option>
+                        <option value="Prospect">Prospect</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="companyFilter">Azienda:</label>
+                    <select id="companyFilter" onchange="filterCustomers()">
+                        <option value="">Tutte</option>
+                    </select>
+                </div>
+                
+                <div class="search-group">
+                    <input type="text" id="searchCustomers" placeholder="Cerca clienti..." onkeyup="searchCustomers()">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <div class="customers-stats">
+                <div class="stat-card">
+                    <div class="stat-icon customers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="total-customers-count">0</h3>
+                        <p>Totale Clienti</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon active">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="active-customers-count">0</h3>
+                        <p>Clienti Attivi</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon companies">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="companies-count">0</h3>
+                        <p>Aziende</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customers-table-container">
+                <table class="customers-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Telefono</th>
+                            <th>Azienda</th>
+                            <th>Stato</th>
+                            <th>Registrato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Caricamento clienti...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuovo Cliente -->
+    <div id="newCustomerModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('newCustomerModal')">&times;</span>
+            <h2>Nuovo Cliente</h2>
+            <form id="customerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerName">Nome *:</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email *:</label>
+                        <input type="email" id="customerEmail" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerPhone">Telefono:</label>
+                        <input type="tel" id="customerPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerCompany">Azienda:</label>
+                        <input type="text" id="customerCompany">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerAddress">Indirizzo:</label>
+                    <textarea id="customerAddress" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerNotes">Note:</label>
+                    <textarea id="customerNotes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerStatus">Stato:</label>
+                    <select id="customerStatus">
+                        <option value="Active">Attivo</option>
+                        <option value="Inactive">Inattivo</option>
+                        <option value="Prospect">Prospect</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-submit">Aggiungi Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Modifica Cliente -->
+    <div id="editCustomerModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('editCustomerModal')">&times;</span>
+            <h2>Modifica Cliente</h2>
+            <form id="editCustomerForm">
+                <input type="hidden" id="editCustomerId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCustomerName">Nome *:</label>
+                        <input type="text" id="editCustomerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerEmail">Email *:</label>
+                        <input type="email" id="editCustomerEmail" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCustomerPhone">Telefono:</label>
+                        <input type="tel" id="editCustomerPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerCompany">Azienda:</label>
+                        <input type="text" id="editCustomerCompany">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerAddress">Indirizzo:</label>
+                    <textarea id="editCustomerAddress" rows="2"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerNotes">Note:</label>
+                    <textarea id="editCustomerNotes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editCustomerStatus">Stato:</label>
+                    <select id="editCustomerStatus">
+                        <option value="Active">Attivo</option>
+                        <option value="Inactive">Inattivo</option>
+                        <option value="Prospect">Prospect</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-submit">Aggiorna Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Dettagli Cliente -->
+    <div id="customerDetailsModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeModal('customerDetailsModal')">&times;</span>
+            <h2>Dettagli Cliente</h2>
+            <div id="customerDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/customers.js"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEBUG - Test Modal CRM</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .modal { display: block !important; background: rgba(0,0,0,0.5); padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 1000px; margin: 0 auto; }
+        .edit-form-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; 
+        }
+        .test-btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 10px; }
+        .debug-info { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 DEBUG - Modal Modifica Ticket</h1>
+    
+    <div class="debug-info">
+        <h3>📋 Informazioni Debug</h3>
+        <p><strong>Scopo:</strong> Verificare che tutti i campi siano visibili nel modal</p>
+        <p><strong>Database:</strong> I campi esistono già in Supabase ✅</p>
+        <p><strong>Template:</strong> I campi sono nel template tickets.html ✅</p>
+        <p><strong>Test:</strong> Vediamo se i campi appaiono correttamente</p>
+    </div>
+
+    <button class="test-btn" onclick="populateTestData()">🧪 Popola con Dati Test</button>
+    <button class="test-btn" onclick="showFormData()">📋 Mostra Dati Form</button>
+
+    <!-- Modal Modifica Ticket - COPIA ESATTA da tickets.html -->
+    <div id="editTicketModal" class="modal">
+        <div class="modal-content">
+            <h2>🔧 Modal Modifica Ticket - Test</h2>
+            <form id="editTicketForm">
+                <input type="hidden" id="editTicketId" value="1">
+                
+                <div class="edit-form-container">
+                    <!-- Colonna sinistra - Campi principali -->
+                    <div class="edit-form-left">
+                        <h3 style="color: #007bff;">📝 Campi Principali (Sinistra)</h3>
+                        
+                        <div class="form-group">
+                            <label for="editTicketTitle">Titolo:</label>
+                            <input type="text" id="editTicketTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketDescription">Descrizione:</label>
+                            <textarea id="editTicketDescription" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCustomerName">Nome Cliente:</label>
+                            <input type="text" id="editCustomerName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCustomerEmail">Email Cliente:</label>
+                            <input type="email" id="editCustomerEmail" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonna destra - Campi di gestione -->
+                    <div class="edit-form-right">
+                        <h3 style="color: #28a745;">⚙️ Campi di Gestione (Destra)</h3>
+                        
+                        <div class="form-group">
+                            <label for="editTicketSoftware">🖥️ Software:</label>
+                            <select id="editTicketSoftware">
+                                <option value="">-- Seleziona Software --</option>
+                                <option value="danea-easyfatt">Danea EasyFatt</option>
+                                <option value="danea-clienti">Danea Clienti</option>
+                                <option value="altro">Altro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketGroup">👥 Gruppo:</label>
+                            <select id="editTicketGroup">
+                                <option value="">-- Seleziona Gruppo --</option>
+                                <option value="supporto-tecnico">Supporto Tecnico</option>
+                                <option value="amministrazione">Amministrazione</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editAssignedToAgent">👤 Agente:</label>
+                            <select id="editAssignedToAgent">
+                                <option value="">-- Non assegnato --</option>
+                                <option value="Marco Rossi">Marco Rossi</option>
+                                <option value="Laura Bianchi">Laura Bianchi</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketType">🏷️ Tipo:</label>
+                            <select id="editTicketType">
+                                <option value="">-- Seleziona Tipo --</option>
+                                <option value="problema-tecnico">Problema Tecnico</option>
+                                <option value="teleassistenza">Teleassistenza</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketStatus">📊 Stato:</label>
+                            <select id="editTicketStatus">
+                                <option value="Open">Aperto</option>
+                                <option value="In Progress">In Corso</option>
+                                <option value="Resolved">Risolto</option>
+                                <option value="Closed">Chiuso</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketPriority">🔥 Priorità:</label>
+                            <select id="editTicketPriority">
+                                <option value="Low">Bassa</option>
+                                <option value="Medium">Media</option>
+                                <option value="High">Alta</option>
+                                <option value="Urgent">Urgente</option>
+                            </select>
+                        </div>
+                        
+                        <hr style="margin: 20px 0; border: 1px solid #eee;">
+                        <h4 style="color: #dc3545;">✏️ Campi Editabili Manuali</h4>
+                        
+                        <div class="form-group">
+                            <label for="editRapportoDanea">📋 Rapporto Danea:</label>
+                            <input type="text" id="editRapportoDanea" placeholder="es: RPT-2025-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editIdAssistenza">🆔 ID Assistenza:</label>
+                            <input type="text" id="editIdAssistenza" placeholder="es: ASS-12345">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editPasswordTeleassistenza">🔐 Password Teleassistenza:</label>
+                            <input type="text" id="editPasswordTeleassistenza" placeholder="es: TEMP123">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editNumeroRichiestaTeleassistenza">📞 Numero Richiesta Teleassistenza:</label>
+                            <input type="text" id="editNumeroRichiestaTeleassistenza" placeholder="es: REQ-789">
+                        </div>
+                    </div>
+                </div>
+                
+                <hr style="margin: 30px 0;">
+                <button type="button" class="test-btn" onclick="showFormData()">💾 Mostra Dati Form</button>
+                <button type="submit" class="test-btn" style="background: #28a745;">✅ Simula Salvataggio</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="output" class="debug-info" style="margin-top: 20px;">
+        <h3>📤 Output Test</h3>
+        <pre id="outputContent">Clicca i pulsanti sopra per testare la funzionalità</pre>
+    </div>
+
+    <script>
+        function populateTestData() {
+            // Popola con dati di test
+            document.getElementById('editTicketTitle').value = 'Problema con Danea EasyFatt';
+            document.getElementById('editTicketDescription').value = 'Il software non si avvia dopo l\'aggiornamento';
+            document.getElementById('editCustomerName').value = 'Mario Rossi';
+            document.getElementById('editCustomerEmail').value = 'mario.rossi@test.com';
+            document.getElementById('editTicketSoftware').value = 'danea-easyfatt';
+            document.getElementById('editTicketGroup').value = 'supporto-tecnico';
+            document.getElementById('editAssignedToAgent').value = 'Marco Rossi';
+            document.getElementById('editTicketType').value = 'problema-tecnico';
+            document.getElementById('editTicketStatus').value = 'In Progress';
+            document.getElementById('editTicketPriority').value = 'High';
+            document.getElementById('editRapportoDanea').value = 'RPT-2025-001';
+            document.getElementById('editIdAssistenza').value = 'ASS-12345';
+            document.getElementById('editPasswordTeleassistenza').value = 'TEMP123';
+            document.getElementById('editNumeroRichiestaTeleassistenza').value = 'REQ-789';
+            
+            showOutput('✅ Dati di test caricati con successo!\nTutti i campi dovrebbero ora essere popolati.');
+        }
+        
+        function showFormData() {
+            const formData = {
+                id: document.getElementById('editTicketId').value,
+                title: document.getElementById('editTicketTitle').value,
+                description: document.getElementById('editTicketDescription').value,
+                customer_name: document.getElementById('editCustomerName').value,
+                customer_email: document.getElementById('editCustomerEmail').value,
+                software: document.getElementById('editTicketSoftware').value,
+                group: document.getElementById('editTicketGroup').value,
+                assigned_to: document.getElementById('editAssignedToAgent').value,
+                type: document.getElementById('editTicketType').value,
+                status: document.getElementById('editTicketStatus').value,
+                priority: document.getElementById('editTicketPriority').value,
+                rapporto_danea: document.getElementById('editRapportoDanea').value,
+                id_assistenza: document.getElementById('editIdAssistenza').value,
+                password_teleassistenza: document.getElementById('editPasswordTeleassistenza').value,
+                numero_richiesta_teleassistenza: document.getElementById('editNumeroRichiestaTeleassistenza').value
+            };
+            
+            showOutput('📋 DATI FORM ATTUALI:\n\n' + JSON.stringify(formData, null, 2));
+        }
+        
+        function showOutput(text) {
+            document.getElementById('outputContent').textContent = text;
+        }
+        
+        // Simula form submission
+        document.getElementById('editTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showFormData();
+            alert('✅ Form submission simulato!\nI dati sono mostrati nell\'output sotto.');
+        });
+        
+        // Auto-popola al caricamento per test immediato
+        setTimeout(populateTestData, 500);
+    </script>
+</body>
+</html>

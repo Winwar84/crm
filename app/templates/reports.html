@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report e Analytics - CRM Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-headset"></i> CRM Pro</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                <li><a href="/tickets"><i class="fas fa-ticket-alt"></i> Ticket</a></li>
+                <li><a href="/customers"><i class="fas fa-users"></i> Clienti</a></li>
+                <li><a href="/agents"><i class="fas fa-user-tie"></i> Agenti</a></li>
+                <li><a href="/settings"><i class="fas fa-cogs"></i> Impostazioni</a></li>
+                <li><a href="/reports" class="active"><i class="fas fa-chart-bar"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1><i class="fas fa-chart-line"></i> Report e Analytics</h1>
+                <div class="header-right">
+                    <div class="report-controls">
+                        <select id="reportPeriod" onchange="updateReportPeriod()">
+                            <option value="7">Ultimi 7 giorni</option>
+                            <option value="30" selected>Ultimi 30 giorni</option>
+                            <option value="90">Ultimi 3 mesi</option>
+                            <option value="365">Ultimo anno</option>
+                        </select>
+                        <button class="btn secondary" onclick="exportReports()">
+                            <i class="fas fa-download"></i> Esporta
+                        </button>
+                        <button class="btn primary" onclick="refreshReports()">
+                            <i class="fas fa-sync-alt"></i> Aggiorna
+                        </button>
+                    </div>
+                    <div class="user-display"></div>
+                    <button class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- KPI Cards -->
+            <div class="reports-kpi">
+                <div class="kpi-card">
+                    <div class="kpi-icon productivity">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3 id="avgResolutionTime">-</h3>
+                        <p>Tempo Medio Risoluzione</p>
+                        <small id="resolutionTrend" class="trend"></small>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon satisfaction">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3 id="customerSatisfaction">-</h3>
+                        <p>Soddisfazione Cliente</p>
+                        <small id="satisfactionTrend" class="trend"></small>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon efficiency">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3 id="firstContactResolution">-</h3>
+                        <p>Risoluzione al Primo Contatto</p>
+                        <small id="fcrTrend" class="trend"></small>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon volume">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3 id="ticketVolume">-</h3>
+                        <p>Volume Ticket</p>
+                        <small id="volumeTrend" class="trend"></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="reports-grid">
+                <!-- Ticket Trends Chart -->
+                <div class="report-card large">
+                    <div class="report-header">
+                        <h3><i class="fas fa-chart-line"></i> Andamento Ticket</h3>
+                        <div class="chart-controls">
+                            <button class="chart-type-btn active" onclick="switchChartType('ticketTrends', 'line')">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="chart-type-btn" onclick="switchChartType('ticketTrends', 'bar')">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ticketTrendsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Ticket Status Distribution -->
+                <div class="report-card medium">
+                    <div class="report-header">
+                        <h3><i class="fas fa-chart-pie"></i> Distribuzione per Stato</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Priority Analysis -->
+                <div class="report-card medium">
+                    <div class="report-header">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Analisi Priorità</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priorityAnalysisChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Agent Performance -->
+                <div class="report-card large">
+                    <div class="report-header">
+                        <h3><i class="fas fa-users"></i> Performance Agenti</h3>
+                        <select id="performanceMetric" onchange="updateAgentPerformance()">
+                            <option value="resolved">Ticket Risolti</option>
+                            <option value="avg_time">Tempo Medio</option>
+                            <option value="customer_rating">Valutazione Cliente</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="agentPerformanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Customer Activity -->
+                <div class="report-card medium">
+                    <div class="report-header">
+                        <h3><i class="fas fa-user-check"></i> Attività Clienti</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="customerActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Response Time Trends -->
+                <div class="report-card medium">
+                    <div class="report-header">
+                        <h3><i class="fas fa-clock"></i> Tempi di Risposta</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Software/Type Analysis -->
+                <div class="report-card large">
+                    <div class="report-header">
+                        <h3><i class="fas fa-laptop-code"></i> Analisi per Categoria</h3>
+                        <select id="categoryType" onchange="updateCategoryAnalysis()">
+                            <option value="software">Software</option>
+                            <option value="type">Tipo Ticket</option>
+                            <option value="group">Gruppo</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryAnalysisChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Workload Heatmap -->
+                <div class="report-card large">
+                    <div class="report-header">
+                        <h3><i class="fas fa-calendar-alt"></i> Mappa del Carico di Lavoro</h3>
+                        <p class="chart-subtitle">Distribuzione ticket per giorno e ora</p>
+                    </div>
+                    <div class="chart-container">
+                        <div id="workloadHeatmap" class="heatmap-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Tables -->
+            <div class="reports-tables">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-trophy"></i> Top Performer Agenti</h3>
+                        <button class="btn secondary" onclick="exportTable('topAgents')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="topAgentsTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Agente</th>
+                                    <th>Ticket Risolti</th>
+                                    <th>Tempo Medio</th>
+                                    <th>Valutazione</th>
+                                    <th>Efficienza</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topAgentsTableBody">
+                                <tr><td colspan="5" class="loading-cell">Caricamento dati...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3><i class="fas fa-exclamation-circle"></i> Problemi Ricorrenti</h3>
+                        <button class="btn secondary" onclick="exportTable('recurringIssues')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table id="recurringIssuesTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Problema</th>
+                                    <th>Occorrenze</th>
+                                    <th>Tempo Medio</th>
+                                    <th>Impatto</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recurringIssuesTableBody">
+                                <tr><td colspan="5" class="loading-cell">Caricamento dati...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/reports.js"></script>
+</body>
+</html>

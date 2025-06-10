@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostazioni - CRM Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-headset"></i> CRM Pro</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                <li><a href="/tickets"><i class="fas fa-ticket-alt"></i> Ticket</a></li>
+                <li><a href="/customers"><i class="fas fa-users"></i> Clienti</a></li>
+                <li><a href="/agents"><i class="fas fa-user-tie"></i> Agenti</a></li>
+                <li><a href="/settings" class="active"><i class="fas fa-cogs"></i> Impostazioni</a></li>
+                <li><a href="/reports"><i class="fas fa-chart-bar"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Impostazioni</h1>
+                <div class="header-right">
+                    <div class="user-display"></div>
+                    <button class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="settings-container">
+                <div class="settings-tabs">
+                    <button class="tab-button active" onclick="showTab('ticket-config')">
+                        <i class="fas fa-ticket-alt"></i> Configurazione Ticket
+                    </button>
+                    <button class="tab-button" onclick="showTab('email-config')">
+                        <i class="fas fa-envelope"></i> Configurazione Email
+                    </button>
+                    <button class="tab-button admin-only" onclick="showTab('admin-panel')" style="display: none;">
+                        <i class="fas fa-users-cog"></i> Amministrazione
+                    </button>
+                    <button class="tab-button" onclick="showTab('system-config')">
+                        <i class="fas fa-cog"></i> Configurazione Sistema
+                    </button>
+                </div>
+
+                <!-- Configurazione Ticket -->
+                <div id="ticket-config" class="tab-content active">
+                    <div class="config-section">
+                        <h3><i class="fas fa-laptop-code"></i> Software</h3>
+                        <p>Configura le opzioni disponibili per il campo Software nei ticket</p>
+                        <div class="config-list" id="softwareList">
+                            <!-- Lista dinamica -->
+                        </div>
+                        <div class="add-option-form">
+                            <input type="text" id="newSoftwareValue" placeholder="Valore (es: danea-easyfatt)">
+                            <input type="text" id="newSoftwareLabel" placeholder="Etichetta (es: Danea EasyFatt)">
+                            <button onclick="addConfigOption('software')" class="btn primary">
+                                <i class="fas fa-plus"></i> Aggiungi Software
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3><i class="fas fa-users-cog"></i> Gruppi</h3>
+                        <p>Configura le opzioni disponibili per il campo Gruppo nei ticket</p>
+                        <div class="config-list" id="groupsList">
+                            <!-- Lista dinamica -->
+                        </div>
+                        <div class="add-option-form">
+                            <input type="text" id="newGroupValue" placeholder="Valore (es: supporto-tecnico)">
+                            <input type="text" id="newGroupLabel" placeholder="Etichetta (es: Supporto Tecnico)">
+                            <button onclick="addConfigOption('groups')" class="btn primary">
+                                <i class="fas fa-plus"></i> Aggiungi Gruppo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3><i class="fas fa-tags"></i> Tipi di Ticket</h3>
+                        <p>Configura le opzioni disponibili per il campo Tipo nei ticket</p>
+                        <div class="config-list" id="typesList">
+                            <!-- Lista dinamica -->
+                        </div>
+                        <div class="add-option-form">
+                            <input type="text" id="newTypeValue" placeholder="Valore (es: problema-tecnico)">
+                            <input type="text" id="newTypeLabel" placeholder="Etichetta (es: Problema Tecnico)">
+                            <button onclick="addConfigOption('types')" class="btn primary">
+                                <i class="fas fa-plus"></i> Aggiungi Tipo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurazione Email -->
+                <div id="email-config" class="tab-content">
+                    <div class="config-section">
+                        <h3><i class="fas fa-tachometer-alt"></i> Stato Sistema Email</h3>
+                        <p>Panoramica dello stato attuale delle configurazioni email</p>
+                        
+                        <div class="email-status-grid">
+                            <div class="status-item">
+                                <div class="status-label">
+                                    <i class="fas fa-paper-plane"></i> SMTP:
+                                </div>
+                                <div class="status-value" id="smtpStatus">
+                                    <span class="status-loading">🔄 Caricamento...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="status-item">
+                                <div class="status-label">
+                                    <i class="fas fa-inbox"></i> IMAP:
+                                </div>
+                                <div class="status-value" id="imapStatus">
+                                    <span class="status-loading">🔄 Caricamento...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="status-item">
+                                <div class="status-label">
+                                    <i class="fas fa-robot"></i> Monitor:
+                                </div>
+                                <div class="status-value" id="monitorStatus">
+                                    <span class="status-loading">🔄 Caricamento...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h3><i class="fas fa-paper-plane"></i> Server Posta in Uscita (SMTP)</h3>
+                        <p>Configura il server SMTP per l'invio di email dal CRM</p>
+                        
+                        <div class="email-form-grid">
+                            <div class="setting-item">
+                                <label for="smtpHost"><i class="fas fa-server"></i> Server SMTP:</label>
+                                <input type="text" id="smtpHost" placeholder="es: smtp.gmail.com">
+                                <small>Indirizzo del server SMTP</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpPort"><i class="fas fa-plug"></i> Porta SMTP:</label>
+                                <input type="number" id="smtpPort" placeholder="587" value="587">
+                                <small>Porta SMTP (587 per TLS, 465 per SSL, 25 per non sicuro)</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpUsername"><i class="fas fa-user"></i> Username:</label>
+                                <input type="text" id="smtpUsername" placeholder="username@email.com">
+                                <small>Indirizzo email o username per l'autenticazione</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpPassword"><i class="fas fa-lock"></i> Password:</label>
+                                <input type="password" id="smtpPassword" placeholder="••••••••">
+                                <small>Password dell'account email</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpSecurity"><i class="fas fa-shield-alt"></i> Sicurezza:</label>
+                                <select id="smtpSecurity">
+                                    <option value="TLS">TLS (Consigliato)</option>
+                                    <option value="SSL">SSL</option>
+                                    <option value="NONE">Nessuna</option>
+                                </select>
+                                <small>Tipo di crittografia per la connessione</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpFromEmail"><i class="fas fa-at"></i> Email Mittente:</label>
+                                <input type="email" id="smtpFromEmail" placeholder="noreply@tuaazienda.com">
+                                <small>Indirizzo email che apparirà come mittente</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="smtpFromName"><i class="fas fa-signature"></i> Nome Mittente:</label>
+                                <input type="text" id="smtpFromName" placeholder="CRM Pro - Supporto">
+                                <small>Nome che apparirà come mittente</small>
+                            </div>
+                        </div>
+                        
+                        <div class="email-actions">
+                            <button onclick="testSmtpConnection()" class="btn secondary">
+                                <i class="fas fa-vial"></i> Testa Connessione SMTP
+                            </button>
+                            <button onclick="saveEmailSettings('smtp')" class="btn primary">
+                                <i class="fas fa-save"></i> Salva Configurazione SMTP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3><i class="fas fa-inbox"></i> Server Posta in Entrata (IMAP)</h3>
+                        <p>Configura il server IMAP per la ricezione di email nel CRM</p>
+                        
+                        <div class="email-form-grid">
+                            <div class="setting-item">
+                                <label for="imapHost"><i class="fas fa-server"></i> Server IMAP:</label>
+                                <input type="text" id="imapHost" placeholder="es: imap.gmail.com">
+                                <small>Indirizzo del server IMAP</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapPort"><i class="fas fa-plug"></i> Porta IMAP:</label>
+                                <input type="number" id="imapPort" placeholder="993" value="993">
+                                <small>Porta IMAP (993 per SSL, 143 per non sicuro)</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapUsername"><i class="fas fa-user"></i> Username:</label>
+                                <input type="text" id="imapUsername" placeholder="username@email.com">
+                                <small>Indirizzo email o username per l'autenticazione</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapPassword"><i class="fas fa-lock"></i> Password:</label>
+                                <input type="password" id="imapPassword" placeholder="••••••••">
+                                <small>Password dell'account email</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapSecurity"><i class="fas fa-shield-alt"></i> Sicurezza:</label>
+                                <select id="imapSecurity">
+                                    <option value="SSL">SSL (Consigliato)</option>
+                                    <option value="TLS">TLS</option>
+                                    <option value="NONE">Nessuna</option>
+                                </select>
+                                <small>Tipo di crittografia per la connessione</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapFolder"><i class="fas fa-folder"></i> Cartella da Monitorare:</label>
+                                <input type="text" id="imapFolder" placeholder="INBOX" value="INBOX">
+                                <small>Cartella email da monitorare per nuovi messaggi</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapAutoCheck"><i class="fas fa-clock"></i> Controllo Automatico:</label>
+                                <select id="imapAutoCheck">
+                                    <option value="0">Disabilitato</option>
+                                    <option value="60">Ogni minuto</option>
+                                    <option value="300">Ogni 5 minuti</option>
+                                    <option value="600">Ogni 10 minuti</option>
+                                    <option value="1800">Ogni 30 minuti</option>
+                                    <option value="3600">Ogni ora</option>
+                                </select>
+                                <small>Frequenza di controllo nuove email</small>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="imapCreateTickets"><i class="fas fa-ticket-alt"></i> Crea Ticket Automatici:</label>
+                                <input type="checkbox" id="imapCreateTickets">
+                                <span>Crea automaticamente ticket dalle email ricevute</span>
+                            </div>
+                        </div>
+                        
+                        <div class="email-actions">
+                            <button onclick="testImapConnection()" class="btn secondary">
+                                <i class="fas fa-vial"></i> Testa Connessione IMAP
+                            </button>
+                            <button onclick="saveEmailSettings('imap')" class="btn primary">
+                                <i class="fas fa-save"></i> Salva Configurazione IMAP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h3><i class="fas fa-envelope-open-text"></i> Template Email</h3>
+                        <p>Configura i template per le email automatiche del CRM</p>
+                        
+                        <div class="template-section">
+                            <h4><i class="fas fa-plus-circle"></i> Notifica Nuovo Ticket</h4>
+                            <div class="setting-item">
+                                <label for="newTicketSubject">Oggetto:</label>
+                                <input type="text" id="newTicketSubject" placeholder="Nuovo Ticket #{ticket_id} - {ticket_title}" value="Nuovo Ticket #{ticket_id} - {ticket_title}">
+                            </div>
+                            <div class="setting-item">
+                                <label for="newTicketTemplate">Template:</label>
+                                <textarea id="newTicketTemplate" rows="6" placeholder="Gentile {customer_name}...">Gentile {customer_name},
+
+Il suo ticket #{ticket_id} "{ticket_title}" è stato creato con successo.
+
+Descrizione: {ticket_description}
+Priorità: {ticket_priority}
+Stato: {ticket_status}
+
+La terremo aggiornata sui progressi.
+
+Cordiali saluti,
+Il Team di Supporto</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="template-section">
+                            <h4><i class="fas fa-edit"></i> Aggiornamento Ticket</h4>
+                            <div class="setting-item">
+                                <label for="updateTicketSubject">Oggetto:</label>
+                                <input type="text" id="updateTicketSubject" placeholder="Aggiornamento Ticket #{ticket_id}" value="Aggiornamento Ticket #{ticket_id}">
+                            </div>
+                            <div class="setting-item">
+                                <label for="updateTicketTemplate">Template:</label>
+                                <textarea id="updateTicketTemplate" rows="6" placeholder="Gentile {customer_name}...">Gentile {customer_name},
+
+Il suo ticket #{ticket_id} "{ticket_title}" è stato aggiornato.
+
+Nuovo stato: {ticket_status}
+{update_message}
+
+Cordiali saluti,
+Il Team di Supporto</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="email-actions">
+                            <button onclick="saveEmailTemplates()" class="btn primary">
+                                <i class="fas fa-save"></i> Salva Template Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amministrazione -->
+                <div id="admin-panel" class="tab-content">
+                    <!-- Statistiche Admin -->
+                    <div class="admin-stats">
+                        <div class="stat-card admin-stat">
+                            <div class="stat-icon pending">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="pending-users-count">0</h3>
+                                <p>Utenti in Attesa</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card admin-stat">
+                            <div class="stat-icon approved">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="approved-users-count">0</h3>
+                                <p>Utenti Approvati</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card admin-stat">
+                            <div class="stat-icon roles">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="admin-users-count">0</h3>
+                                <p>Amministratori</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card admin-stat">
+                            <div class="stat-icon system">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="system-health">OK</h3>
+                                <p>Stato Sistema</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="admin-tabs">
+                        <button class="admin-tab-button active" onclick="showAdminTab('pending-users')">
+                            <i class="fas fa-user-clock"></i> Approvazioni
+                            <span class="tab-badge" id="pending-badge">0</span>
+                        </button>
+                        <button class="admin-tab-button" onclick="showAdminTab('all-users')">
+                            <i class="fas fa-users"></i> Tutti gli Agenti
+                        </button>
+                        <button class="admin-tab-button" onclick="showAdminTab('system-info')">
+                            <i class="fas fa-info-circle"></i> Info Sistema
+                        </button>
+                        <button class="admin-tab-button" onclick="showAdminTab('logs')">
+                            <i class="fas fa-file-alt"></i> Log Sistema
+                        </button>
+                    </div>
+
+                    <!-- Tab Utenti in Attesa -->
+                    <div id="pending-users" class="admin-tab-content active">
+                        <div class="admin-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-user-clock"></i> Richieste Agenti in Approvazione</h2>
+                                <div class="section-actions">
+                                    <button class="btn secondary" onclick="loadPendingUsers()">
+                                        <i class="fas fa-refresh"></i> Aggiorna
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="users-grid" id="pendingUsersGrid">
+                                <div class="loading-card">
+                                    <div class="loading-spinner"></div>
+                                    <p>Caricamento richieste...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Tutti gli Agenti -->
+                    <div id="all-users" class="admin-tab-content">
+                        <div class="admin-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-users"></i> Gestione Agenti</h2>
+                                <div class="section-actions">
+                                    <div class="filter-group">
+                                        <select id="roleFilter" onchange="filterUsers()">
+                                            <option value="">Tutti i Ruoli</option>
+                                            <option value="admin">Amministratori</option>
+                                            <option value="supervisor">Supervisori</option>
+                                            <option value="operator">Operatori</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <select id="statusFilter" onchange="filterUsers()">
+                                            <option value="">Tutti gli Stati</option>
+                                            <option value="approved">Approvati</option>
+                                            <option value="pending">In Attesa</option>
+                                            <option value="rejected">Rifiutati</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn secondary" onclick="loadAllUsers()">
+                                        <i class="fas fa-refresh"></i> Aggiorna
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="users-grid" id="allUsersGrid">
+                                <div class="loading-card">
+                                    <div class="loading-spinner"></div>
+                                    <p>Caricamento utenti...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Info Sistema -->
+                    <div id="system-info" class="admin-tab-content">
+                        <div class="admin-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-info-circle"></i> Informazioni Sistema</h2>
+                                <button class="btn secondary" onclick="loadSystemInfo()">
+                                    <i class="fas fa-refresh"></i> Aggiorna
+                                </button>
+                            </div>
+                            
+                            <div class="system-info-grid">
+                                <div class="info-card">
+                                    <h3><i class="fas fa-database"></i> Database</h3>
+                                    <div class="info-details" id="databaseInfo">
+                                        <div class="info-item">
+                                            <span class="info-label">Stato:</span>
+                                            <span class="info-value" id="dbStatus">Connesso</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Ticket Totali:</span>
+                                            <span class="info-value" id="totalTickets">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Clienti Totali:</span>
+                                            <span class="info-value" id="totalCustomers">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-envelope"></i> Sistema Email</h3>
+                                    <div class="info-details" id="emailInfo">
+                                        <div class="info-item">
+                                            <span class="info-label">SMTP:</span>
+                                            <span class="info-value" id="smtpStatus">Non Configurato</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">IMAP:</span>
+                                            <span class="info-value" id="imapStatus">Non Configurato</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Monitor:</span>
+                                            <span class="info-value" id="monitorStatus">Inattivo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-cog"></i> Applicazione</h3>
+                                    <div class="info-details" id="appInfo">
+                                        <div class="info-item">
+                                            <span class="info-label">Versione:</span>
+                                            <span class="info-value">CRM Pro v2.0</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Ultimo Avvio:</span>
+                                            <span class="info-value" id="lastStart">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">Uptime:</span>
+                                            <span class="info-value" id="uptime">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Logs -->
+                    <div id="logs" class="admin-tab-content">
+                        <div class="admin-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-file-alt"></i> Log Sistema</h2>
+                                <div class="section-actions">
+                                    <button class="btn secondary" onclick="loadSystemLogs()">
+                                        <i class="fas fa-refresh"></i> Aggiorna
+                                    </button>
+                                    <button class="btn danger" onclick="clearLogs()">
+                                        <i class="fas fa-trash"></i> Pulisci Log
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="logs-container">
+                                <div class="logs-viewer" id="logsViewer">
+                                    <div class="log-placeholder">
+                                        <i class="fas fa-file-alt"></i>
+                                        <p>Clicca "Aggiorna" per caricare i log del sistema</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurazione Sistema -->
+                <div id="system-config" class="tab-content">
+                    <div class="config-section">
+                        <h3><i class="fas fa-cog"></i> Impostazioni Generali</h3>
+                        <div class="setting-item">
+                            <label for="companyName">Nome Azienda:</label>
+                            <input type="text" id="companyName" value="CRM Pro">
+                        </div>
+                        <div class="setting-item">
+                            <label for="defaultPriority">Priorità Predefinita:</label>
+                            <select id="defaultPriority">
+                                <option value="Low">Bassa</option>
+                                <option value="Medium" selected>Media</option>
+                                <option value="High">Alta</option>
+                                <option value="Urgent">Urgente</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="autoAssign">Assegnazione Automatica:</label>
+                            <input type="checkbox" id="autoAssign">
+                            <span>Assegna automaticamente i ticket agli agenti disponibili</span>
+                        </div>
+                        <button onclick="saveSystemSettings()" class="btn primary">
+                            <i class="fas fa-save"></i> Salva Impostazioni
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal per Approvazione Utente -->
+    <div id="approveUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Approva Utente</h3>
+                <span class="close" onclick="closeApproveUserModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="approveUserForm">
+                    <input type="hidden" id="approveUserId">
+                    
+                    <div class="form-group">
+                        <label>Utente:</label>
+                        <p id="approveUserInfo"></p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="approveUserRole">Assegna Ruolo:</label>
+                        <select id="approveUserRole" required>
+                            <option value="operator">Operatore</option>
+                            <option value="supervisor">Supervisore</option>
+                            <option value="admin">Amministratore</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn success">
+                            <i class="fas fa-check"></i> Approva
+                        </button>
+                        <button type="button" class="btn danger" onclick="rejectUser()">
+                            <i class="fas fa-times"></i> Rifiuta
+                        </button>
+                        <button type="button" class="btn secondary" onclick="closeApproveUserModal()">
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

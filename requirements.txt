@@ -1,0 +1,34 @@
+# Framework principale
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Database e autenticazione
+supabase==2.7.4
+bcrypt==4.0.1
+PyJWT==2.8.0
+
+# Configurazione e ambiente
+python-dotenv==1.0.0
+
+# Utilità aggiuntive
+requests==2.31.0
+Werkzeug==2.3.7
+
+# Per produzione
+gunicorn==21.2.0
+psycopg2-binary==2.9.7
+
+# Per Redis caching (opzionale)
+redis==5.0.1
+
+# Per logging avanzato
+structlog==23.2.0
+
+# Per validazione dati
+marshmallow==3.20.1
+
+# Per date e time handling
+python-dateutil==2.8.2
+
+# Email handling
+schedule==1.2.0

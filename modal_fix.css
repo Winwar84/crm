@@ -1,0 +1,246 @@
+/* FIX IMPAGINAZIONE MODAL NUOVO TICKET */
+
+/* Migliora la struttura del modal fullscreen */
+.modal-fullscreen .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 30px 30px 30px; /* Ridotto padding top */
+    background: #f8f9fa;
+    min-height: 0;
+}
+
+/* Customer selection più compatta */
+.modal-fullscreen .customer-selection {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Migliora layout a 2 colonne */
+.modal-fullscreen .new-ticket-form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin: 20px 0;
+    min-height: auto;
+}
+
+/* Sezioni form più bilanciate */
+.modal-fullscreen .new-ticket-form-left,
+.modal-fullscreen .new-ticket-form-right {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    height: fit-content; /* Importante per bilanciare altezze */
+}
+
+/* Headers delle sezioni */
+.modal-fullscreen .new-ticket-form-left h4,
+.modal-fullscreen .new-ticket-form-right h4 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-fullscreen .new-ticket-form-right h5 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Form groups più spaziati */
+.modal-fullscreen .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-fullscreen .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Input e textarea migliorati */
+.modal-fullscreen .form-group input,
+.modal-fullscreen .form-group textarea,
+.modal-fullscreen .form-group select {
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-fullscreen .form-group input:focus,
+.modal-fullscreen .form-group textarea:focus,
+.modal-fullscreen .form-group select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+/* Textarea più proporzionata */
+.modal-fullscreen .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Separatori migliorati */
+.modal-fullscreen hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Bottone submit migliorato */
+.modal-fullscreen .btn-submit {
+    margin-top: 30px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.modal-fullscreen .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Customer choice migliorato */
+.modal-fullscreen .customer-choice {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.modal-fullscreen .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.modal-fullscreen .radio-option:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+}
+
+.modal-fullscreen .radio-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Form row per campi customer */
+.modal-fullscreen .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* Info card cliente */
+.modal-fullscreen .info-card {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    margin-top: 15px;
+}
+
+.modal-fullscreen .info-card h4 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* Responsive migliorato */
+@media (max-width: 1200px) {
+    .modal-fullscreen .new-ticket-form-container {
+        gap: 20px;
+    }
+    
+    .modal-fullscreen .new-ticket-form-left,
+    .modal-fullscreen .new-ticket-form-right {
+        padding: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-fullscreen {
+        left: 0;
+    }
+    
+    .modal-fullscreen .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-fullscreen .new-ticket-form-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .modal-fullscreen .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .modal-fullscreen .customer-choice {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Fix per scrolling fluido */
+.modal-fullscreen .modal-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+.modal-fullscreen .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.modal-fullscreen .modal-body::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 5px;
+}
+
+.modal-fullscreen .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #5a6fd8;
+}

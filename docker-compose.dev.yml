@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  crm-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm-pro-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - ./database:/app/database
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=true
+      - PYTHONPATH=/app
+      # Usa Supabase per il database
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
+    restart: unless-stopped
+    command: python app/app.py
+    networks:
+      - crm-dev-network
+
+networks:
+  crm-dev-network:
+    driver: bridge

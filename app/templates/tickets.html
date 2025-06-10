@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Ticket - CRM Pro v2.0</title>
+    <!-- AGGIORNATO: Modal con nuovi campi ticket - Timestamp: 2025-06-09 -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-headset"></i> CRM Pro</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+                <li><a href="/tickets" class="active"><i class="fas fa-ticket-alt"></i> Ticket</a></li>
+                <li><a href="/customers"><i class="fas fa-users"></i> Clienti</a></li>
+                <li><a href="/agents"><i class="fas fa-user-tie"></i> Agenti</a></li>
+                <li><a href="/settings"><i class="fas fa-cogs"></i> Impostazioni</a></li>
+                <li><a href="/reports"><i class="fas fa-chart-bar"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Gestione Ticket</h1>
+                <div class="header-right">
+                    <div class="user-display"></div>
+                    <button class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                    <div class="ticket-actions">
+                        <button class="btn primary" onclick="openNewTicketModal()">
+                            <i class="fas fa-plus"></i> Nuovo Ticket
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="tickets-filters">
+                <div class="filter-group">
+                    <label for="statusFilter">Stato:</label>
+                    <select id="statusFilter" onchange="filterTickets()">
+                        <option value="">Tutti</option>
+                        <option value="Open">Aperti</option>
+                        <option value="In Progress">In Corso</option>
+                        <option value="Resolved">Risolti</option>
+                        <option value="Closed">Chiusi</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="priorityFilter">Priorità:</label>
+                    <select id="priorityFilter" onchange="filterTickets()">
+                        <option value="">Tutte</option>
+                        <option value="Low">Bassa</option>
+                        <option value="Medium">Media</option>
+                        <option value="High">Alta</option>
+                        <option value="Urgent">Urgente</option>
+                    </select>
+                </div>
+                
+                <div class="search-group">
+                    <input type="text" id="searchTickets" placeholder="Cerca ticket..." onkeyup="searchTickets()">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <div class="tickets-table-container">
+                <table class="tickets-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titolo</th>
+                            <th>Cliente</th>
+                            <th>Priorità</th>
+                            <th>Stato</th>
+                            <th>Assegnato a</th>
+                            <th>Creato</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketsTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Caricamento ticket...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuovo Ticket -->
+    <div id="newTicketModal" class="modal modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-plus"></i> Nuovo Ticket</h2>
+                <span class="close" onclick="closeModal('newTicketModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+            <form id="ticketForm">
+                <div class="new-ticket-form-container">
+                    <!-- Colonna sinistra - Cliente e Dettagli principali del ticket -->
+                    <div class="new-ticket-form-left">
+                        <h4 style="color: #dc3545; border-bottom: 2px solid #dc3545; padding-bottom: 5px;">
+                            <i class="fas fa-user"></i> Cliente
+                        </h4>
+                        
+                        <div class="customer-selection">
+                            <div class="form-group">
+                                <label>Tipo Cliente:</label>
+                                <div class="customer-choice">
+                                    <label class="radio-option">
+                                        <input type="radio" name="customerType" value="existing" checked onchange="toggleCustomerType()">
+                                        <span>Cliente esistente</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="customerType" value="new" onchange="toggleCustomerType()">
+                                        <span>Nuovo cliente</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="existingCustomerSection">
+                                <div class="form-group">
+                                    <label for="existingCustomer">Seleziona Cliente:</label>
+                                    <select id="existingCustomer" onchange="onCustomerSelect()">
+                                        <option value="">-- Seleziona un cliente --</option>
+                                    </select>
+                                </div>
+                                <div id="selectedCustomerInfo" class="customer-info-display" style="display: none;">
+                                    <div class="info-card">
+                                        <h4>Cliente Selezionato:</h4>
+                                        <div id="customerInfoContent"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="newCustomerSection" style="display: none;">
+                                <div class="form-group">
+                                    <label for="customerName">Nome Cliente:</label>
+                                    <input type="text" id="customerName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="customerEmail">Email Cliente:</label>
+                                    <input type="email" id="customerEmail">
+                                </div>
+                                <div class="form-group">
+                                    <label for="customerPhone">Telefono (opzionale):</label>
+                                    <input type="tel" id="customerPhone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="customerCompanyTicket">Azienda (opzionale):</label>
+                                    <input type="text" id="customerCompanyTicket">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr style="margin: 20px 0; border: 1px solid #eee;">
+                        <h4 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+                            <i class="fas fa-edit"></i> Dettagli Ticket
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="ticketTitle">Titolo Ticket:</label>
+                            <input type="text" id="ticketTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketDescription">Descrizione:</label>
+                            <textarea id="ticketDescription" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketPriority">Priorità:</label>
+                            <select id="ticketPriority">
+                                <option value="Low">Bassa</option>
+                                <option value="Medium" selected>Media</option>
+                                <option value="High">Alta</option>
+                                <option value="Urgent">Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonna destra - Campi di gestione -->
+                    <div class="new-ticket-form-right">
+                        <h4 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 5px;">
+                            <i class="fas fa-cogs"></i> Classificazione e Gestione
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="newTicketSoftware"><i class="fas fa-desktop"></i> Software:</label>
+                            <select id="newTicketSoftware">
+                                <option value="">-- Seleziona Software --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newTicketGroup"><i class="fas fa-users"></i> Gruppo:</label>
+                            <select id="newTicketGroup">
+                                <option value="">-- Seleziona Gruppo --</option>
+                            </select>
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            <label for="newTicketType"><i class="fas fa-tag"></i> Tipo:</label>
+                            <select id="newTicketType">
+                                <option value="">-- Seleziona Tipo --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newAssignedToAgent"><i class="fas fa-user-tie"></i> Agente Assegnato:</label>
+                            <select id="newAssignedToAgent">
+                                <option value="">-- Seleziona Agente --</option>
+                            </select>
+                        </div>
+                        
+                        <hr style="margin: 20px 0; border: 1px solid #eee;">
+                        <h5 style="color: #dc3545;">
+                            <i class="fas fa-edit"></i> Campi Assistenza (Opzionali)
+                        </h5>
+                        
+                        <div class="form-group">
+                            <label for="newRapportoDanea"><i class="fas fa-file-alt"></i> Rapporto Danea:</label>
+                            <input type="text" id="newRapportoDanea" placeholder="es: RPT-2025-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newIdAssistenza"><i class="fas fa-id-card"></i> ID Assistenza:</label>
+                            <input type="text" id="newIdAssistenza" placeholder="es: ASS-12345">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newPasswordTeleassistenza"><i class="fas fa-key"></i> Password Teleassistenza:</label>
+                            <input type="text" id="newPasswordTeleassistenza" placeholder="es: TEMP123">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="newNumeroRichiestaTeleassistenza"><i class="fas fa-phone"></i> Numero Richiesta Teleassistenza:</label>
+                            <input type="text" id="newNumeroRichiestaTeleassistenza" placeholder="es: REQ-789">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit">Crea Ticket</button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifica Ticket -->
+    <div id="editTicketModal" class="modal modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Modifica Ticket</h2>
+                <span class="close" onclick="closeModal('editTicketModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+            <form id="editTicketForm">
+                <input type="hidden" id="editTicketId">
+                
+                <div class="new-ticket-form-container">
+                    <!-- Colonna sinistra - Campi principali -->
+                    <div class="new-ticket-form-left">
+                        <h4 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+                            <i class="fas fa-edit"></i> Dettagli Ticket
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="editTicketTitle">Titolo:</label>
+                            <input type="text" id="editTicketTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketDescription">Descrizione:</label>
+                            <textarea id="editTicketDescription" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCustomerName">Nome Cliente:</label>
+                            <input type="text" id="editCustomerName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editCustomerEmail">Email Cliente:</label>
+                            <input type="email" id="editCustomerEmail" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketPriority">Priorità:</label>
+                            <select id="editTicketPriority">
+                                <option value="Low">Bassa</option>
+                                <option value="Medium">Media</option>
+                                <option value="High">Alta</option>
+                                <option value="Urgent">Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonna destra - Campi di gestione -->
+                    <div class="new-ticket-form-right">
+                        <h4 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 5px;">
+                            <i class="fas fa-cogs"></i> Classificazione e Gestione
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="editTicketSoftware"><i class="fas fa-desktop"></i> Software:</label>
+                            <select id="editTicketSoftware">
+                                <option value="">-- Seleziona Software --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketGroup"><i class="fas fa-users"></i> Gruppo:</label>
+                            <select id="editTicketGroup">
+                                <option value="">-- Seleziona Gruppo --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketType"><i class="fas fa-tag"></i> Tipo:</label>
+                            <select id="editTicketType">
+                                <option value="">-- Seleziona Tipo --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editAssignedToAgent"><i class="fas fa-user-tie"></i> Agente:</label>
+                            <select id="editAssignedToAgent">
+                                <option value="">-- Non assegnato --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editTicketStatus"><i class="fas fa-info-circle"></i> Stato:</label>
+                            <select id="editTicketStatus">
+                                <option value="Open">Aperto</option>
+                                <option value="In Progress">In Corso</option>
+                                <option value="Resolved">Risolto</option>
+                                <option value="Closed">Chiuso</option>
+                            </select>
+                        </div>
+                        
+                        <hr style="margin: 20px 0; border: 1px solid #eee;">
+                        <h5 style="color: #dc3545;">
+                            <i class="fas fa-edit"></i> Campi Assistenza (Opzionali)
+                        </h5>
+                        
+                        <div class="form-group">
+                            <label for="editRapportoDanea"><i class="fas fa-file-alt"></i> Rapporto Danea:</label>
+                            <input type="text" id="editRapportoDanea" placeholder="es: RPT-2025-001">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editIdAssistenza"><i class="fas fa-id-card"></i> ID Assistenza:</label>
+                            <input type="text" id="editIdAssistenza" placeholder="es: ASS-12345">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editPasswordTeleassistenza"><i class="fas fa-key"></i> Password Teleassistenza:</label>
+                            <input type="text" id="editPasswordTeleassistenza" placeholder="es: TEMP123">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editNumeroRichiestaTeleassistenza"><i class="fas fa-phone"></i> Numero Richiesta Teleassistenza:</label>
+                            <input type="text" id="editNumeroRichiestaTeleassistenza" placeholder="es: REQ-789">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit">Aggiorna Ticket</button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dettagli Ticket -->
+    <div id="ticketDetailsModal" class="modal modal-ticket-details">
+        <div class="modal-content">
+            <!-- Main content area -->
+            <div class="main-content-area">
+                <div class="modal-header">
+                    <h2><i class="fas fa-eye"></i> Visualizza Ticket</h2>
+                    <span class="close" onclick="closeModal('ticketDetailsModal')">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="ticketMainContent">
+                        <!-- Main ticket content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Details sidebar -->
+            <div class="details-sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-info-circle"></i> Dettagli</h3>
+                </div>
+                <div class="sidebar-body">
+                    <div id="ticketDetailsContent">
+                        <!-- Compact details will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/tickets.js"></script>
+</body>
+</html>

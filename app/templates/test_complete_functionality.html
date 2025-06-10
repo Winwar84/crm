@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Completo Funzionalità</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Completo Funzionalità CRM</h1>
+    
+    <div class="test-section">
+        <h3>📋 Test 1: Caricamento Ticket</h3>
+        <div id="test1-result"></div>
+        <button onclick="testLoadTickets()">Esegui Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Test 2: Configurazioni API</h3>
+        <div id="test2-result"></div>
+        <button onclick="testConfigurations()">Esegui Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>💾 Test 3: Salvataggio Completo</h3>
+        <div id="test3-result"></div>
+        <button onclick="testFullSave()">Esegui Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>🎯 Test 4: Dettagli Ticket</h3>
+        <div id="test4-result"></div>
+        <button onclick="testTicketDetails()">Esegui Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📊 Risultato Complessivo</h3>
+        <div id="overall-result"></div>
+        <button onclick="runAllTests()">Esegui Tutti i Test</button>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let testResults = [];
+
+        async function testLoadTickets() {
+            const resultDiv = document.getElementById('test1-result');
+            try {
+                const response = await fetch(`${API_BASE}/tickets`);
+                const tickets = await response.json();
+                
+                if (tickets.length > 0) {
+                    const ticket = tickets[0];
+                    const hasNewFields = ticket.hasOwnProperty('software') && 
+                                       ticket.hasOwnProperty('group') && 
+                                       ticket.hasOwnProperty('type') &&
+                                       ticket.hasOwnProperty('rapporto_danea');
+                    
+                    if (hasNewFields) {
+                        resultDiv.innerHTML = `<div class="success">✅ SUCCESSO: Ticket caricati con nuovi campi presenti</div>`;
+                        testResults[0] = true;
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ ERRORE: Nuovi campi non presenti nei ticket</div>`;
+                        testResults[0] = false;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="info">⚠️ AVVISO: Nessun ticket presente per il test</div>`;
+                    testResults[0] = false;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ ERRORE: ${error.message}</div>`;
+                testResults[0] = false;
+            }
+        }
+
+        async function testConfigurations() {
+            const resultDiv = document.getElementById('test2-result');
+            let results = [];
+            
+            try {
+                // Test Software
+                const softwareResponse = await fetch(`${API_BASE}/config/software`);
+                const software = await softwareResponse.json();
+                results.push(software.length > 0 ? '✅ Software: OK' : '❌ Software: VUOTO');
+                
+                // Test Groups
+                const groupsResponse = await fetch(`${API_BASE}/config/groups`);
+                const groups = await groupsResponse.json();
+                results.push(groups.length > 0 ? '✅ Gruppi: OK' : '❌ Gruppi: VUOTO');
+                
+                // Test Types
+                const typesResponse = await fetch(`${API_BASE}/config/types`);
+                const types = await typesResponse.json();
+                results.push(types.length > 0 ? '✅ Tipi: OK' : '❌ Tipi: VUOTO');
+                
+                const allGood = results.every(r => r.includes('✅'));
+                resultDiv.innerHTML = `<div class="${allGood ? 'success' : 'error'}">${results.join('<br>')}</div>`;
+                testResults[1] = allGood;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ ERRORE: ${error.message}</div>`;
+                testResults[1] = false;
+            }
+        }
+
+        async function testFullSave() {
+            const resultDiv = document.getElementById('test3-result');
+            
+            const testData = {
+                title: "Test Salvataggio Completo",
+                description: "Test di tutti i campi nuovi",
+                customer_name: "Test Customer",
+                customer_email: "test@example.com",
+                status: "In Progress",
+                priority: "High",
+                assigned_to: "Test Agent",
+                software: "danea-easyfatt",
+                group: "supporto-tecnico", 
+                type: "problema-tecnico",
+                rapporto_danea: "RPT-TEST-002",
+                id_assistenza: "ASS-TEST-456",
+                password_teleassistenza: "TEMP456",
+                numero_richiesta_teleassistenza: "REQ-TEST-123"
+            };
+            
+            try {
+                // Update ticket 1
+                const response = await fetch(`${API_BASE}/tickets/1`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    // Verify the save
+                    const verifyResponse = await fetch(`${API_BASE}/tickets`);
+                    const tickets = await verifyResponse.json();
+                    const updatedTicket = tickets.find(t => t.id === 1);
+                    
+                    if (updatedTicket && 
+                        updatedTicket.software === testData.software &&
+                        updatedTicket.group === testData.group &&
+                        updatedTicket.rapporto_danea === testData.rapporto_danea) {
+                        
+                        resultDiv.innerHTML = `<div class="success">✅ SUCCESSO: Tutti i campi salvati correttamente</div>`;
+                        testResults[2] = true;
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ ERRORE: Campi non salvati correttamente</div>`;
+                        testResults[2] = false;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ERRORE: Salvataggio fallito</div>`;
+                    testResults[2] = false;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ ERRORE: ${error.message}</div>`;
+                testResults[2] = false;
+            }
+        }
+
+        async function testTicketDetails() {
+            const resultDiv = document.getElementById('test4-result');
+            
+            try {
+                // Test che la pagina tickets contenga il modal con tutti i campi
+                const ticketsPage = await fetch('/tickets');
+                const ticketsHtml = await ticketsPage.text();
+                
+                const hasEditFields = ticketsHtml.includes('editTicketSoftware') &&
+                                    ticketsHtml.includes('editRapportoDanea') &&
+                                    ticketsHtml.includes('editIdAssistenza') &&
+                                    ticketsHtml.includes('editPasswordTeleassistenza');
+                
+                if (hasEditFields) {
+                    resultDiv.innerHTML = `<div class="success">✅ SUCCESSO: Modal di modifica contiene tutti i campi</div>`;
+                    testResults[3] = true;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ ERRORE: Modal di modifica incompleto</div>`;
+                    testResults[3] = false;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ ERRORE: ${error.message}</div>`;
+                testResults[3] = false;
+            }
+        }
+
+        async function runAllTests() {
+            const overallResult = document.getElementById('overall-result');
+            overallResult.innerHTML = '<div class="info">🔄 Esecuzione test in corso...</div>';
+            
+            await testLoadTickets();
+            await testConfigurations();
+            await testFullSave();
+            await testTicketDetails();
+            
+            const passed = testResults.filter(Boolean).length;
+            const total = testResults.length;
+            
+            if (passed === total) {
+                overallResult.innerHTML = `<div class="success">🎉 TUTTI I TEST SUPERATI! (${passed}/${total})</div>`;
+            } else {
+                overallResult.innerHTML = `<div class="error">⚠️ ALCUNI TEST FALLITI: ${passed}/${total} superati</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

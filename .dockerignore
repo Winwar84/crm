@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Environment files
+.env
+.env.*
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache
+.mypy_cache
+
+# Virtual environments
+venv
+env
+.venv
+.env
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# Backups
+backups
+*.sql.backup
+
+# Temporary files
+.tmp
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (se presenti)
+node_modules
+npm-debug.log
+
+# Build artifacts
+build
+dist
+*.egg-info
+
+# Database files locali
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+
+# Cache files
+.cache
+.pytest_cache

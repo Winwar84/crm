@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Modifica Ticket</title>
+    <link rel="stylesheet" href="app/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .test-container { max-width: 1200px; margin: 0 auto; }
+        .show-modal-btn { 
+            padding: 15px 30px; 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .modal { display: none; }
+        .modal.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Modal Modifica Ticket</h1>
+        <p>Clicca il pulsante per vedere il modal di modifica con tutti i campi richiesti:</p>
+        
+        <button class="show-modal-btn" onclick="showTestModal()">
+            <i class="fas fa-edit"></i> Mostra Modal Modifica Ticket
+        </button>
+
+        <!-- Modal Modifica Ticket -->
+        <div id="editTicketModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeTestModal()">&times;</span>
+                <h2>Modifica Ticket</h2>
+                <form id="editTicketForm">
+                    <input type="hidden" id="editTicketId">
+                    
+                    <div class="edit-form-container">
+                        <!-- Colonna sinistra - Campi principali -->
+                        <div class="edit-form-left">
+                            <div class="form-group">
+                                <label for="editTicketTitle">Titolo:</label>
+                                <input type="text" id="editTicketTitle" required value="Problema con Danea EasyFatt">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketDescription">Descrizione:</label>
+                                <textarea id="editTicketDescription" rows="4" required>Il software non si avvia correttamente dopo l'ultimo aggiornamento. Viene visualizzato un errore di database.</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editCustomerName">Nome Cliente:</label>
+                                <input type="text" id="editCustomerName" required value="Mario Rossi">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editCustomerEmail">Email Cliente:</label>
+                                <input type="email" id="editCustomerEmail" required value="mario.rossi@example.com">
+                            </div>
+                        </div>
+                        
+                        <!-- Colonna destra - Campi di gestione -->
+                        <div class="edit-form-right">
+                            <div class="form-group">
+                                <label for="editTicketSoftware">Software:</label>
+                                <select id="editTicketSoftware">
+                                    <option value="">-- Seleziona Software --</option>
+                                    <option value="danea-easyfatt" selected>Danea EasyFatt</option>
+                                    <option value="danea-clienti">Danea Clienti</option>
+                                    <option value="gestionale-custom">Gestionale Custom</option>
+                                    <option value="altro">Altro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketGroup">Gruppo:</label>
+                                <select id="editTicketGroup">
+                                    <option value="">-- Seleziona Gruppo --</option>
+                                    <option value="supporto-tecnico" selected>Supporto Tecnico</option>
+                                    <option value="assistenza-commerciale">Assistenza Commerciale</option>
+                                    <option value="amministrazione">Amministrazione</option>
+                                    <option value="sviluppo">Sviluppo</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editAssignedToAgent">Agente:</label>
+                                <select id="editAssignedToAgent">
+                                    <option value="">-- Non assegnato --</option>
+                                    <option value="Giovanni Bianchi" selected>Giovanni Bianchi (Supporto Tecnico)</option>
+                                    <option value="Laura Verde">Laura Verde (Assistenza)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketType">Tipo:</label>
+                                <select id="editTicketType">
+                                    <option value="">-- Seleziona Tipo --</option>
+                                    <option value="problema-tecnico" selected>Problema Tecnico</option>
+                                    <option value="richiesta-informazioni">Richiesta Informazioni</option>
+                                    <option value="installazione">Installazione</option>
+                                    <option value="configurazione">Configurazione</option>
+                                    <option value="formazione">Formazione</option>
+                                    <option value="teleassistenza">Teleassistenza</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketStatus">Stato:</label>
+                                <select id="editTicketStatus">
+                                    <option value="Open">Aperto</option>
+                                    <option value="In Progress" selected>In Corso</option>
+                                    <option value="Resolved">Risolto</option>
+                                    <option value="Closed">Chiuso</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketPriority">Priorità:</label>
+                                <select id="editTicketPriority">
+                                    <option value="Low">Bassa</option>
+                                    <option value="Medium">Media</option>
+                                    <option value="High" selected>Alta</option>
+                                    <option value="Urgent">Urgente</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editRapportoDanea">Rapporto Danea:</label>
+                                <input type="text" id="editRapportoDanea" placeholder="Inserisci rapporto Danea" value="RPT-2023-001">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editIdAssistenza">ID Assistenza:</label>
+                                <input type="text" id="editIdAssistenza" placeholder="Inserisci ID assistenza" value="ASS-12345">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editPasswordTeleassistenza">Password Teleassistenza:</label>
+                                <input type="text" id="editPasswordTeleassistenza" placeholder="Inserisci password teleassistenza" value="TEMP123">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editNumeroRichiestaTeleassistenza">Numero Richiesta Teleassistenza:</label>
+                                <input type="text" id="editNumeroRichiestaTeleassistenza" placeholder="Inserisci numero richiesta" value="REQ-789">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Aggiorna Ticket</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTestModal() {
+            document.getElementById('editTicketModal').classList.add('show');
+        }
+        
+        function closeTestModal() {
+            document.getElementById('editTicketModal').classList.remove('show');
+        }
+        
+        // Chiudi modal cliccando fuori
+        window.onclick = function(event) {
+            const modal = document.getElementById('editTicketModal');
+            if (event.target == modal) {
+                modal.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

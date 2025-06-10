@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Test Modal - CRM Pro</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-header { background: #007bff; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .test-btn { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin: 10px; }
+        .test-btn:hover { background: #218838; }
+        .test-btn.secondary { background: #6c757d; }
+        .test-btn.secondary:hover { background: #5a6268; }
+        .debug-output { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin: 20px 0; }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .modal { display: none; }
+        .modal.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-bug"></i> TEST MODAL MODIFICA TICKET</h1>
+            <p>Questa pagina verifica che tutti i campi richiesti siano presenti e funzionanti</p>
+        </div>
+
+        <div class="debug-output">
+            <h3>📋 Status Check</h3>
+            <div id="statusCheck">
+                <p>🔄 Controllo in corso...</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="test-btn" onclick="openTestModal()">
+                <i class="fas fa-eye"></i> MOSTRA MODAL CON TUTTI I CAMPI
+            </button>
+            <button class="test-btn secondary" onclick="checkDatabase()">
+                <i class="fas fa-database"></i> TEST DATABASE
+            </button>
+            <button class="test-btn secondary" onclick="loadRealTicket()">
+                <i class="fas fa-ticket-alt"></i> CARICA TICKET REALE
+            </button>
+        </div>
+
+        <div class="debug-output">
+            <h3>📤 Output Test</h3>
+            <pre id="testOutput">Clicca i pulsanti sopra per iniziare i test</pre>
+        </div>
+
+        <!-- Modal di Test - UGUALE al modal tickets.html -->
+        <div id="editTicketModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeTestModal()">&times;</span>
+                <h2><i class="fas fa-edit"></i> Test Modal Modifica Ticket</h2>
+                <form id="editTicketForm">
+                    <input type="hidden" id="editTicketId">
+                    
+                    <div class="edit-form-container">
+                        <!-- Colonna sinistra - Campi principali -->
+                        <div class="edit-form-left">
+                            <h4 style="color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 5px;">
+                                <i class="fas fa-edit"></i> Campi Principali
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label for="editTicketTitle">Titolo:</label>
+                                <input type="text" id="editTicketTitle" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketDescription">Descrizione:</label>
+                                <textarea id="editTicketDescription" rows="4" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editCustomerName">Nome Cliente:</label>
+                                <input type="text" id="editCustomerName" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editCustomerEmail">Email Cliente:</label>
+                                <input type="email" id="editCustomerEmail" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Colonna destra - Campi di gestione -->
+                        <div class="edit-form-right">
+                            <h4 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 5px;">
+                                <i class="fas fa-cogs"></i> Campi di Gestione
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label for="editTicketSoftware"><i class="fas fa-desktop"></i> Software:</label>
+                                <select id="editTicketSoftware">
+                                    <option value="">-- Seleziona Software --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketGroup"><i class="fas fa-users"></i> Gruppo:</label>
+                                <select id="editTicketGroup">
+                                    <option value="">-- Seleziona Gruppo --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editAssignedToAgent"><i class="fas fa-user"></i> Agente:</label>
+                                <select id="editAssignedToAgent">
+                                    <option value="">-- Non assegnato --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketType"><i class="fas fa-tag"></i> Tipo:</label>
+                                <select id="editTicketType">
+                                    <option value="">-- Seleziona Tipo --</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketStatus"><i class="fas fa-flag"></i> Stato:</label>
+                                <select id="editTicketStatus">
+                                    <option value="Open">Aperto</option>
+                                    <option value="In Progress">In Corso</option>
+                                    <option value="Resolved">Risolto</option>
+                                    <option value="Closed">Chiuso</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editTicketPriority"><i class="fas fa-exclamation"></i> Priorità:</label>
+                                <select id="editTicketPriority">
+                                    <option value="Low">Bassa</option>
+                                    <option value="Medium">Media</option>
+                                    <option value="High">Alta</option>
+                                    <option value="Urgent">Urgente</option>
+                                </select>
+                            </div>
+                            
+                            <hr style="margin: 20px 0; border: 1px solid #eee;">
+                            <h5 style="color: #dc3545;">
+                                <i class="fas fa-edit"></i> Campi Editabili Manuali
+                            </h5>
+                            
+                            <div class="form-group">
+                                <label for="editRapportoDanea"><i class="fas fa-file-alt"></i> Rapporto Danea:</label>
+                                <input type="text" id="editRapportoDanea" placeholder="Inserisci rapporto Danea">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editIdAssistenza"><i class="fas fa-id-card"></i> ID Assistenza:</label>
+                                <input type="text" id="editIdAssistenza" placeholder="Inserisci ID assistenza">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editPasswordTeleassistenza"><i class="fas fa-key"></i> Password Teleassistenza:</label>
+                                <input type="text" id="editPasswordTeleassistenza" placeholder="Inserisci password teleassistenza">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="editNumeroRichiestaTeleassistenza"><i class="fas fa-phone"></i> Numero Richiesta Teleassistenza:</label>
+                                <input type="text" id="editNumeroRichiestaTeleassistenza" placeholder="Inserisci numero richiesta">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <button type="button" class="test-btn" onclick="populateTestData()">
+                            <i class="fas fa-fill"></i> Popola Dati Test
+                        </button>
+                        <button type="button" class="test-btn secondary" onclick="showFormData()">
+                            <i class="fas fa-eye"></i> Mostra Dati
+                        </button>
+                        <button type="submit" class="test-btn" style="background: #28a745;">
+                            <i class="fas fa-save"></i> Test Salvataggio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Controlla status all'avvio
+        document.addEventListener('DOMContentLoaded', function() {
+            performStatusCheck();
+        });
+
+        async function performStatusCheck() {
+            const statusDiv = document.getElementById('statusCheck');
+            let status = [];
+
+            // Controlla elementi HTML
+            const requiredElements = [
+                'editTicketSoftware', 'editTicketGroup', 'editTicketType',
+                'editRapportoDanea', 'editIdAssistenza', 'editPasswordTeleassistenza',
+                'editNumeroRichiestaTeleassistenza'
+            ];
+
+            let htmlOk = true;
+            requiredElements.forEach(id => {
+                if (document.getElementById(id)) {
+                    status.push(`✅ Elemento ${id}: OK`);
+                } else {
+                    status.push(`❌ Elemento ${id}: MANCANTE`);
+                    htmlOk = false;
+                }
+            });
+
+            status.push(htmlOk ? '✅ HTML: Tutti gli elementi presenti' : '❌ HTML: Elementi mancanti');
+
+            // Test API
+            try {
+                const response = await fetch(`${API_BASE}/tickets?limit=1`);
+                if (response.ok) {
+                    status.push('✅ API: Connessione OK');
+                    const tickets = await response.json();
+                    if (tickets.length > 0) {
+                        const ticket = tickets[0];
+                        const hasNewFields = 'software' in ticket || 'group' in ticket;
+                        status.push(hasNewFields ? '✅ Database: Nuovi campi presenti' : '⚠️ Database: Nuovi campi non verificati');
+                    }
+                } else {
+                    status.push('⚠️ API: Risposta non OK');
+                }
+            } catch (error) {
+                status.push(`❌ API: Errore - ${error.message}`);
+            }
+
+            statusDiv.innerHTML = status.map(s => `<p>${s}</p>`).join('');
+        }
+
+        function openTestModal() {
+            loadTestOptions();
+            document.getElementById('editTicketModal').classList.add('show');
+            populateTestData();
+        }
+
+        function closeTestModal() {
+            document.getElementById('editTicketModal').classList.remove('show');
+        }
+
+        function loadTestOptions() {
+            // Popola opzioni di test
+            const softwareSelect = document.getElementById('editTicketSoftware');
+            softwareSelect.innerHTML = `
+                <option value="">-- Seleziona Software --</option>
+                <option value="danea-easyfatt">Danea EasyFatt</option>
+                <option value="danea-clienti">Danea Clienti</option>
+                <option value="gestionale-custom">Gestionale Custom</option>
+                <option value="altro">Altro</option>
+            `;
+
+            const groupSelect = document.getElementById('editTicketGroup');
+            groupSelect.innerHTML = `
+                <option value="">-- Seleziona Gruppo --</option>
+                <option value="supporto-tecnico">Supporto Tecnico</option>
+                <option value="assistenza-commerciale">Assistenza Commerciale</option>
+                <option value="amministrazione">Amministrazione</option>
+                <option value="sviluppo">Sviluppo</option>
+            `;
+
+            const typeSelect = document.getElementById('editTicketType');
+            typeSelect.innerHTML = `
+                <option value="">-- Seleziona Tipo --</option>
+                <option value="problema-tecnico">Problema Tecnico</option>
+                <option value="richiesta-informazioni">Richiesta Informazioni</option>
+                <option value="installazione">Installazione</option>
+                <option value="teleassistenza">Teleassistenza</option>
+            `;
+
+            updateOutput('✅ Opzioni di test caricate nei menu a tendina');
+        }
+
+        function populateTestData() {
+            document.getElementById('editTicketTitle').value = 'Test - Problema Danea EasyFatt';
+            document.getElementById('editTicketDescription').value = 'Test descrizione per verificare tutti i campi del modal di modifica ticket.';
+            document.getElementById('editCustomerName').value = 'Cliente Test';
+            document.getElementById('editCustomerEmail').value = 'test@example.com';
+            document.getElementById('editTicketSoftware').value = 'danea-easyfatt';
+            document.getElementById('editTicketGroup').value = 'supporto-tecnico';
+            document.getElementById('editTicketType').value = 'problema-tecnico';
+            document.getElementById('editTicketStatus').value = 'In Progress';
+            document.getElementById('editTicketPriority').value = 'High';
+            document.getElementById('editRapportoDanea').value = 'RPT-TEST-001';
+            document.getElementById('editIdAssistenza').value = 'ASS-TEST-123';
+            document.getElementById('editPasswordTeleassistenza').value = 'TEMP456';
+            document.getElementById('editNumeroRichiestaTeleassistenza').value = 'REQ-TEST-789';
+            
+            updateOutput('✅ Dati di test popolati in tutti i campi!\n\nSe vedi tutti i campi compilati, l\'implementazione è corretta.');
+        }
+
+        function showFormData() {
+            const formData = {
+                title: document.getElementById('editTicketTitle').value,
+                description: document.getElementById('editTicketDescription').value,
+                customer_name: document.getElementById('editCustomerName').value,
+                customer_email: document.getElementById('editCustomerEmail').value,
+                software: document.getElementById('editTicketSoftware').value,
+                group: document.getElementById('editTicketGroup').value,
+                type: document.getElementById('editTicketType').value,
+                status: document.getElementById('editTicketStatus').value,
+                priority: document.getElementById('editTicketPriority').value,
+                rapporto_danea: document.getElementById('editRapportoDanea').value,
+                id_assistenza: document.getElementById('editIdAssistenza').value,
+                password_teleassistenza: document.getElementById('editPasswordTeleassistenza').value,
+                numero_richiesta_teleassistenza: document.getElementById('editNumeroRichiestaTeleassistenza').value
+            };
+            
+            updateOutput('📋 DATI FORM ATTUALI:\n\n' + JSON.stringify(formData, null, 2));
+        }
+
+        async function checkDatabase() {
+            try {
+                const response = await fetch(`${API_BASE}/tickets?limit=1`);
+                const tickets = await response.json();
+                
+                if (tickets.length > 0) {
+                    updateOutput('✅ DATABASE CHECK:\n\n' + JSON.stringify(tickets[0], null, 2));
+                } else {
+                    updateOutput('⚠️ Nessun ticket trovato nel database');
+                }
+            } catch (error) {
+                updateOutput(`❌ Errore database: ${error.message}`);
+            }
+        }
+
+        async function loadRealTicket() {
+            try {
+                const response = await fetch(`${API_BASE}/tickets?limit=1`);
+                const tickets = await response.json();
+                
+                if (tickets.length > 0) {
+                    const ticket = tickets[0];
+                    document.getElementById('editTicketTitle').value = ticket.title || '';
+                    document.getElementById('editTicketDescription').value = ticket.description || '';
+                    document.getElementById('editCustomerName').value = ticket.customer_name || '';
+                    document.getElementById('editCustomerEmail').value = ticket.customer_email || '';
+                    document.getElementById('editTicketSoftware').value = ticket.software || '';
+                    document.getElementById('editTicketGroup').value = ticket.group || '';
+                    document.getElementById('editTicketType').value = ticket.type || '';
+                    document.getElementById('editTicketStatus').value = ticket.status || '';
+                    document.getElementById('editTicketPriority').value = ticket.priority || '';
+                    document.getElementById('editRapportoDanea').value = ticket.rapporto_danea || '';
+                    document.getElementById('editIdAssistenza').value = ticket.id_assistenza || '';
+                    document.getElementById('editPasswordTeleassistenza').value = ticket.password_teleassistenza || '';
+                    document.getElementById('editNumeroRichiestaTeleassistenza').value = ticket.numero_richiesta_teleassistenza || '';
+                    
+                    openTestModal();
+                    updateOutput('✅ Ticket reale caricato dal database!');
+                } else {
+                    updateOutput('⚠️ Nessun ticket disponibile');
+                }
+            } catch (error) {
+                updateOutput(`❌ Errore caricamento ticket: ${error.message}`);
+            }
+        }
+
+        function updateOutput(text) {
+            document.getElementById('testOutput').textContent = text;
+        }
+
+        // Handle form submission
+        document.getElementById('editTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            showFormData();
+            alert('✅ Test submission completato!\nI dati sono mostrati nell\'output sotto.');
+        });
+
+        // Close modal clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editTicketModal');
+            if (event.target == modal) {
+                closeTestModal();
+            }
+        }
+    </script>
+</body>
+</html>

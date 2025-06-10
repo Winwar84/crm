@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  crm-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: crm-pro
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - app_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=false
+      - PYTHONPATH=/app
+      # Variabili Supabase (da configurare tramite .env o passare come argomenti)
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-here-change-in-production}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health', timeout=10)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - crm-network
+    depends_on:
+      - crm-db
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Database locale opzionale (per sviluppo/test)
+  crm-db:
+    image: postgres:15-alpine
+    container_name: crm-postgres
+    environment:
+      - POSTGRES_DB=crm_pro
+      - POSTGRES_USER=crm_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-crm_password_change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./migration_add_ticket_fields.sql:/docker-entrypoint-initdb.d/02-migration.sql
+      - ./email_tables.sql:/docker-entrypoint-initdb.d/03-email-tables.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - crm-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+
+  # Redis per caching (opzionale)
+  crm-cache:
+    image: redis:7-alpine
+    container_name: crm-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password_change_me}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - crm-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  crm-network:
+    driver: bridge
