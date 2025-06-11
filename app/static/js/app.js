@@ -1587,7 +1587,8 @@ async function loadTicketMessages(ticketId) {
             return;
         }
         
-        messagesContainer.innerHTML = messages.map(message => {
+        // Genera il nuovo HTML
+        const newHTML = messages.map(message => {
             const messageDate = new Date(message.created_at);
             const isAgent = message.sender_type === 'agent';
             const isInternal = message.is_internal;
@@ -1609,8 +1610,12 @@ async function loadTicketMessages(ticketId) {
             `;
         }).join('');
         
-        // Scroll to bottom
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Aggiorna solo se il contenuto è diverso (evita lampeggio)
+        if (messagesContainer.innerHTML !== newHTML) {
+            messagesContainer.innerHTML = newHTML;
+            // Scroll to bottom solo se c'è stato un cambiamento
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
         
     } catch (error) {
         console.error('Errore nel caricamento messaggi:', error);
@@ -1630,6 +1635,7 @@ async function loadTicketMessages(ticketId) {
 let isMessageSending = false;
 
 async function sendTicketMessage(event, ticketId) {
+    console.log('🚀 sendTicketMessage chiamata con ticketId:', ticketId);
     event.preventDefault();
     
     // Previeni invii duplicati
@@ -1638,8 +1644,23 @@ async function sendTicketMessage(event, ticketId) {
         return;
     }
     
-    const messageText = document.getElementById('messageText').value.trim();
-    const isInternal = document.getElementById('isInternalMessage').checked;
+    const messageTextElement = document.getElementById('messageText');
+    const isInternalElement = document.getElementById('isInternalMessage');
+    
+    console.log('📝 messageTextElement:', messageTextElement);
+    console.log('☑️ isInternalElement:', isInternalElement);
+    
+    if (!messageTextElement || !isInternalElement) {
+        console.error('❌ Elementi del form non trovati!');
+        showNotification('Errore nel form del messaggio', 'error');
+        return;
+    }
+    
+    const messageText = messageTextElement.value.trim();
+    const isInternal = isInternalElement.checked;
+    
+    console.log('📄 messageText:', messageText);
+    console.log('🔒 isInternal:', isInternal);
     
     if (!messageText) {
         showNotification('Inserisci un messaggio', 'error');
@@ -1692,6 +1713,16 @@ async function sendTicketMessage(event, ticketId) {
         // Rilascia sempre il flag
         isMessageSending = false;
         console.log('🔓 Flag invio rilasciato');
+    }
+}
+
+// Funzione per aggiornare manualmente i messaggi del ticket
+function refreshTicketMessages() {
+    if (currentTicketId) {
+        console.log('🔄 Aggiornamento manuale messaggi per ticket:', currentTicketId);
+        loadTicketMessages(currentTicketId);
+    } else {
+        console.warn('⚠️ Nessun ticket ID corrente per l\'aggiornamento');
     }
 }
 

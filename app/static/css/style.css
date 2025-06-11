@@ -913,7 +913,11 @@ body {
     border-radius: 12px;
     max-width: 70%;
     word-wrap: break-word;
+}
+
+.message.new-message {
     animation: messageSlideIn 0.3s ease;
+    animation-fill-mode: forwards;
 }
 
 .message.agent {
