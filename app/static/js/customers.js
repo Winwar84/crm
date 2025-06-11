@@ -2,6 +2,27 @@
 let allCustomers = [];
 let filteredCustomers = [];
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 // Function to make authenticated requests
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('user_token');
@@ -77,19 +98,19 @@ function displayCustomersTable() {
             <td>#${customer.id}</td>
             <td>
                 <div class="customer-info">
-                    <strong>${customer.name}</strong>
-                    ${customer.company ? `<br><small>${customer.company}</small>` : ''}
+                    <strong>${escapeHtml(customer.name)}</strong>
+                    ${customer.company ? `<br><small>${escapeHtml(customer.company)}</small>` : ''}
                 </div>
             </td>
             <td>
-                <a href="mailto:${customer.email}">${customer.email}</a>
+                <a href="mailto:${sanitizeForAttribute(customer.email)}">${escapeHtml(customer.email)}</a>
             </td>
             <td>
-                ${customer.phone ? `<a href="tel:${customer.phone}">${customer.phone}</a>` : '-'}
+                ${customer.phone ? `<a href="tel:${sanitizeForAttribute(customer.phone)}">${escapeHtml(customer.phone)}</a>` : '-'}
             </td>
-            <td>${customer.company || '-'}</td>
+            <td>${escapeHtml(customer.company) || '-'}</td>
             <td>
-                <span class="status-badge status-${customer.status}">${customer.status}</span>
+                <span class="status-badge status-${sanitizeForAttribute(customer.status)}">${escapeHtml(customer.status)}</span>
             </td>
             <td>${formatDate(customer.created_at)}</td>
             <td class="customer-actions-cell">

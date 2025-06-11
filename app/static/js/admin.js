@@ -2,6 +2,27 @@
 let pendingUsers = [];
 let allUsers = [];
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 // Function to make authenticated requests
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('user_token');
@@ -96,21 +117,22 @@ function displayPendingUsers() {
     }
     
     grid.innerHTML = pendingUsers.map(user => {
-        const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+        const safeFullName = escapeHtml(user.full_name) || '';
+        const initials = safeFullName.split(' ').map(n => n[0]).join('').toUpperCase();
         return `
             <div class="user-card">
                 <div class="user-card-header">
                     <div class="user-avatar">${initials}</div>
                     <div class="user-info">
-                        <div class="user-name">${user.full_name}</div>
-                        <div class="user-username">@${user.username}</div>
+                        <div class="user-name">${escapeHtml(user.full_name)}</div>
+                        <div class="user-username">@${escapeHtml(user.username)}</div>
                     </div>
                 </div>
                 
                 <div class="user-details">
                     <div class="user-email">
                         <i class="fas fa-envelope"></i>
-                        ${user.email}
+                        ${escapeHtml(user.email)}
                     </div>
                 </div>
                 

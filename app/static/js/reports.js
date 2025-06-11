@@ -794,8 +794,13 @@ async function fetchWithAuth(url, options = {}) {
     });
 }
 
-// Auto-refresh reports every 5 minutes
-setInterval(refreshReports, 5 * 60 * 1000);
+// Auto-refresh reports every 10 minutes (reduced frequency to prevent system overload)
+setInterval(() => {
+    // Only refresh if we're still on the reports page and not actively using other modals
+    if (window.location.pathname === '/reports' && !document.querySelector('.modal[style*="display: block"]')) {
+        refreshReports();
+    }
+}, 10 * 60 * 1000);
 
 // Show notification function if not available from app.js
 if (typeof showNotification === 'undefined') {
