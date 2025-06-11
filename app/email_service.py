@@ -591,7 +591,122 @@ Il Team di Supporto"""
             # Prepara il contenuto email
             subject = f"Re: Ticket #{ticket['id']} - {ticket['title']}"
             
-            body = f"""Gentile {ticket['customer_name']},
+            # Template HTML professionale
+            html_body = f"""
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Pro - Aggiornamento Ticket</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f6fa;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f6fa; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                                <span style="font-size: 32px;">🎧</span> CRM Pro
+                            </h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">
+                                Sistema di Supporto Clienti
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Ticket Info Banner -->
+                    <tr>
+                        <td style="background-color: #e3f2fd; padding: 20px 40px; border-bottom: 1px solid #e9ecef;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="width: 50%;">
+                                        <h3 style="margin: 0; color: #1565c0; font-size: 18px;">
+                                            📋 Ticket #{ticket['id']}
+                                        </h3>
+                                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+                                            {ticket['title']}
+                                        </p>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <span style="background-color: #{'#4caf50' if ticket['status'] == 'Open' else '#ff9800' if ticket['status'] == 'In Progress' else '#2196f3'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                            {ticket['status']}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="color: #333; margin: 0 0 20px 0; font-size: 20px;">
+                                Ciao {ticket['customer_name']},
+                            </h2>
+                            
+                            <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                                <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.6;">
+                                    {message['message_text'].replace(chr(10), '<br>')}
+                                </p>
+                            </div>
+                            
+                            <p style="color: #666; font-size: 14px; margin: 30px 0 20px 0;">
+                                Per rispondere a questo messaggio, <strong>rispondi semplicemente a questa email</strong>. 
+                                La tua risposta verrà automaticamente aggiunta alla conversazione del ticket.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Ticket Details -->
+                    <tr>
+                        <td style="background-color: #fafafa; padding: 30px 40px;">
+                            <h3 style="color: #333; margin: 0 0 15px 0; font-size: 16px;">📋 Dettagli Ticket</h3>
+                            <table width="100%" cellpadding="8" cellspacing="0">
+                                <tr>
+                                    <td style="color: #666; font-size: 14px; width: 30%;"><strong>ID Ticket:</strong></td>
+                                    <td style="color: #333; font-size: 14px;">#{ticket['id']}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #666; font-size: 14px;"><strong>Priorità:</strong></td>
+                                    <td style="color: #333; font-size: 14px;">
+                                        <span style="color: #{'#f44336' if ticket['priority'] == 'Urgent' else '#ff9800' if ticket['priority'] == 'High' else '#4caf50'};">
+                                            {ticket['priority']}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #666; font-size: 14px;"><strong>Agente Assegnato:</strong></td>
+                                    <td style="color: #333; font-size: 14px;">{message['sender_name']}</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px 40px; text-align: center;">
+                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 14px;">
+                                Grazie per aver scelto il nostro servizio di supporto
+                            </p>
+                            <p style="color: rgba(255,255,255,0.7); margin: 10px 0 0 0; font-size: 12px;">
+                                CRM Pro - Sistema di Gestione Clienti | Non rispondere a questo indirizzo
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>"""
+            
+            # Template testo fallback per client che non supportano HTML
+            text_body = f"""Gentile {ticket['customer_name']},
 
 {message['message_text']}
 
@@ -600,19 +715,25 @@ Ticket ID: #{ticket['id']}
 Titolo: {ticket['title']}
 Stato: {ticket['status']}
 Priorità: {ticket['priority']}
+Agente: {message['sender_name']}
 
 Per rispondere, basta rispondere a questa email.
 
 Cordiali saluti,
-Il Team di Supporto"""
+Il Team di Supporto CRM Pro"""
             
             # Configura SMTP
             smtp = smtplib.SMTP(config['host'], config['port'])
             smtp.starttls() if config['security'] == 'TLS' else None
             smtp.login(config['username'], config['password'])
             
-            # Crea messaggio
-            msg = MIMEText(body)
+            # Crea messaggio multipart (HTML + testo)
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            
+            msg = MIMEMultipart('alternative')
+            msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+            msg.attach(MIMEText(html_body, 'html', 'utf-8'))
             msg['Subject'] = subject
             msg['From'] = f"{config['from_name']} <{config['from_email']}>"
             msg['To'] = ticket['customer_email']

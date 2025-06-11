@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadAllTickets();
         loadAgentsForTickets();
         loadTicketConfigurationOptions(); // AGGIUNTO: Carica configurazioni per i menu a tendina
-        loadCurrentAgentSelector(); // Initialize agent selector
         setupTicketsEventListeners();
         
         // Load current agent from localStorage

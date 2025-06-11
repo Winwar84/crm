@@ -88,7 +88,6 @@ function initializeApp() {
     loadStats();
     loadRecentTickets();
     loadAgents();
-    loadCurrentAgentSelector();
     setupEventListeners();
     updateUserDisplay();
     
@@ -223,6 +222,7 @@ async function loadCustomersForTicket() {
         console.error('Errore nel caricamento dei clienti:', error);
     }
 }
+
 
 // Load current agent selector
 async function loadCurrentAgentSelector() {

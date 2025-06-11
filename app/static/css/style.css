@@ -246,6 +246,48 @@ body {
     gap: 20px;
 }
 
+/* Agent selector in header */
+.agent-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.agent-selector label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #667eea;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.agent-selector select {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    background: white;
+    color: #333;
+    min-width: 160px;
+    max-width: 180px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.agent-selector select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.agent-selector select:hover {
+    border-color: #667eea;
+}
+
 /* Agent selection styles */
 .stat-icon.departments {
     background: linear-gradient(135deg, #ff9a56, #ff6b6b);
