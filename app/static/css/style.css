@@ -1,7 +1,7 @@
 /* ===== CYBERPUNK COMMAND CENTER DESIGN ===== */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
-/* ===== CSS VARIABLES - NEON PALETTE ===== */
+/* ===== CSS VARIABLES - DARK MODE (CYBERPUNK) ===== */
 :root {
     --neon-cyan: #00ffff;
     --neon-magenta: #ff0080;
@@ -23,6 +23,37 @@
     
     --shadow-neon: 0 0 20px rgba(0, 255, 255, 0.3);
     --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    --border-radius: 12px;
+    --border-radius-lg: 20px;
+    
+    --transition-fast: 0.2s ease-out;
+    --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ===== CSS VARIABLES - WHITE MODE (ELEGANT) ===== */
+[data-theme="light"] {
+    --neon-cyan: #0066cc;
+    --neon-magenta: #cc0066;
+    --neon-purple: #6600cc;
+    --neon-yellow: #cc9900;
+    --neon-green: #00cc33;
+    
+    --dark-bg: #f8f9fa;
+    --dark-surface: #ffffff;
+    --dark-elevated: #ffffff;
+    --dark-border: #e0e6ed;
+    
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 102, 204, 0.2);
+    
+    --text-primary: #2c3e50;
+    --text-secondary: #6c757d;
+    --text-accent: var(--neon-cyan);
+    
+    --shadow-neon: 0 0 20px rgba(0, 102, 204, 0.2);
+    --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.1);
     
     --border-radius: 12px;
     --border-radius-lg: 20px;
@@ -65,6 +96,15 @@ body::before {
         radial-gradient(circle at 40% 40%, rgba(128, 0, 255, 0.08) 0%, transparent 50%);
     z-index: -2;
     animation: backgroundPulse 8s ease-in-out infinite alternate;
+}
+
+/* Light mode background */
+[data-theme="light"] body::before {
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(0, 102, 204, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(204, 0, 102, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(102, 0, 204, 0.03) 0%, transparent 50%);
+    opacity: 0.8;
 }
 
 @keyframes backgroundPulse {
@@ -2445,4 +2485,97 @@ table tr:hover {
     padding: 30px;
     color: var(--text-secondary);
     font-style: italic;
+}
+
+/* ===== THEME TOGGLE BUTTON ===== */
+.theme-toggle {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    padding: 8px 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    min-width: 120px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-smooth);
+}
+
+.theme-toggle:hover::before {
+    left: 100%;
+}
+
+.theme-toggle:hover {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Light mode adjustments */
+[data-theme="light"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 102, 204, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+    background: rgba(0, 102, 204, 0.1);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(0, 102, 204, 0.2);
+}
+
+.theme-toggle i {
+    transition: all var(--transition-fast);
+    font-size: 1rem;
+}
+
+.theme-toggle:hover i {
+    transform: scale(1.2) rotate(15deg);
+    color: var(--neon-cyan);
+}
+
+/* Animation for theme switching */
+.theme-switching {
+    animation: themeSwitch 0.6s ease-in-out;
+}
+
+@keyframes themeSwitch {
+    0% { transform: scale(1); }
+    25% { transform: scale(0.95) rotate(5deg); }
+    50% { transform: scale(1.05) rotate(-5deg); }
+    75% { transform: scale(0.98) rotate(2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Light mode particles (softer) */
+[data-theme="light"] .particle {
+    opacity: 0.3;
+    background: var(--neon-cyan);
+}
+
+[data-theme="light"] .particle:nth-child(2n) {
+    background: var(--neon-magenta);
+}
+
+[data-theme="light"] .particle:nth-child(3n) {
+    background: var(--neon-purple);
 }

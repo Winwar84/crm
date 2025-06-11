@@ -1,4 +1,4 @@
-# CRM Pro v2.2 - Sistema Chat Ticket
+# CRM Pro v2.5 - Cyberpunk Command Center
 
 ## 🚀 Quick Start
 ```bash
@@ -49,11 +49,15 @@ docker restart crm-pro
 - **Monitor**: Controllo automatico casella email
 - **Persistenza**: Configurazioni email salvate permanentemente via MCP
 
-### 🎨 UI/UX
-- **Responsive**: Mobile-first design
-- **Layout Ibrido**: Main content + sidebar 300px per ticket details
-- **Stili Modern**: Gradient, cards, animazioni
-- **Dark Theme**: Supporto preferenze utente
+### 🎨 **NEW: Cyberpunk Command Center UI/UX**
+- **Dual Theme System**: Toggle Dark/Light mode con button header
+- **Cyberpunk Design**: Neon colors, glassmorphism, floating particles
+- **Professional Light Mode**: Clean business interface alternative
+- **Theme Persistence**: Salvataggio preferenze in localStorage
+- **Interactive Effects**: Hover animations, glow effects, sound feedback
+- **System HUD**: Real-time status indicators e cyber clock
+- **Matrix Effects**: Easter egg Ctrl+Shift+M per Matrix rain
+- **Enhanced UI**: Floating sidebar, neon borders, backdrop blur
 
 ## 📊 Database Schema
 
@@ -111,13 +115,32 @@ docker restart crm-pro             # Restart if needed
 - **Email Issues**: Check SMTP/IMAP config in settings
 - **MCP Email**: Use `task_helper.py` for email settings operations
 - **Password Save**: Email passwords now persist via MCP Supabase
+- **Theme Issues**: Check `data-theme` attribute on document element
+- **Particles Not Loading**: Verify `initCyberpunkEffects()` called on page load
 
 ### Frontend Debug
 - **JS Errors**: Open browser console, check for errors
 - **API Calls**: Check Network tab for failed requests
 - **Missing Data**: Verify `currentUser` variable exists
+- **Theme Toggle**: Check localStorage for 'crm-theme' key
+- **Animations**: Verify CSS animations working and particles container exists
 
-## 🎯 Latest Updates (2025-06-10)
+## 🎯 Latest Updates (2025-06-11)
+
+### v2.5 Cyberpunk Features - NEW! 
+✅ **Complete UI Transformation**: Cyberpunk command center aesthetic
+✅ **Dual Theme System**: Dark (cyberpunk) ↔ Light (professional) toggle
+✅ **Theme Toggle Button**: Available in header di tutte le pagine
+✅ **CSS Variables System**: Seamless theme switching con data-theme attribute
+✅ **Floating Particles**: Animated background effects (opacity adapted per light mode)
+✅ **Glassmorphism Design**: Backdrop blur, neon borders, enhanced cards
+✅ **System HUD**: Real-time SYS/DB/NET status indicators
+✅ **Cyber Clock**: Live time display con glitch effects
+✅ **Interactive Enhancements**: Button glow, hover animations, sound effects
+✅ **Matrix Rain Easter Egg**: Ctrl+Shift+M trigger per Matrix-style animation
+✅ **Enhanced Notifications**: Custom system con icons e audio feedback
+✅ **JavaScript Effects Engine**: Comprehensive particle e animation system
+✅ **Theme Persistence**: LocalStorage save/restore delle preferenze utente
 
 ### v2.4 Features
 ✅ **UI Layout Fixes**: Risolti problemi layout form che escono dai contenitori
@@ -179,5 +202,68 @@ from task_helper import get_from_supabase
 config = get_from_supabase('email_settings', {'type': 'smtp'})
 ```
 
+## 🌓 Theme System - Come Funziona
+
+### Dual Theme Architecture
+- **Dark Mode (Cyberpunk)**: Neon cyan/magenta/purple, dark backgrounds, intense effects
+- **Light Mode (Professional)**: Business blues, light backgrounds, subtle animations
+- **CSS Variables**: `:root` vs `[data-theme="light"]` per switching seamless
+- **Persistence**: Theme choice saved in localStorage as `crm-theme`
+
+### Theme Toggle Implementation
+```javascript
+// Utilizzo
+toggleTheme()              // Switch between themes
+setTheme('light')         // Force specific theme
+getCurrentTheme()         // Get current theme
+```
+
+### Theme Toggle Button
+- **Location**: Header-right section di tutte le pagine
+- **Dynamic Content**: Icon e text change based on current theme
+- **Visual Feedback**: Glassmorphism styling con hover effects
+- **Cross-page**: Consistent experience in tutta l'applicazione
+
+### CSS Architecture  
+```css
+/* Dark mode (default) */
+:root {
+    --neon-cyan: #00ffff;
+    --dark-bg: #0a0a0f;
+    --glass-bg: rgba(20, 20, 40, 0.7);
+}
+
+/* Light mode override */
+[data-theme="light"] {
+    --neon-cyan: #0066cc;
+    --dark-bg: #f8f9fa;
+    --glass-bg: rgba(255, 255, 255, 0.9);
+}
+```
+
+### Interactive Effects System
+- **Particles**: 50 floating animated elements con different colors/timings
+- **Sound System**: UI audio feedback per notifications (subtle/professional)
+- **Matrix Easter Egg**: Ctrl+Shift+M per Matrix rain animation
+- **Enhanced Notifications**: Custom toast system con icons
+- **System HUD**: Real-time status indicators (SYS/DB/NET)
+- **Cyber Clock**: Live time con occasional glitch effects
+
+## 🔥 Command Center Features
+
+### Advanced UI Elements
+- **Floating Sidebar**: Glassmorphism con neon borders e hover effects
+- **Navigation Links**: Sweep animations, active state indicators
+- **Enhanced Buttons**: Glow effects, scale transforms, glassmorphism
+- **Responsive Cards**: Hover states, enhanced shadows, gradient borders
+- **Interactive Tables**: Row hover effects, enhanced styling
+
+### Performance Optimizations
+- **CSS Animations**: Hardware accelerated con GPU
+- **JavaScript Effects**: Efficient particle system con RAF
+- **Theme Switching**: Instant CSS variable updates
+- **Local Storage**: Minimal overhead per preferences
+- **Mobile Responsive**: Optimized effects per mobile devices
+
 ---
-*Sistema completamente funzionale con chat integrata e MCP Supabase per gestione ticket professionale*
+*CRM Pro v2.5 - Cyberpunk Command Center completo con dual theme system e advanced interactive effects*

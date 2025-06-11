@@ -17,6 +17,9 @@ let currentTicketId = null;
 document.addEventListener('DOMContentLoaded', function() {
     checkAuthentication();
     
+    // Initialize theme system
+    initThemeSystem();
+    
     // Initialize cyberpunk effects
     initCyberpunkEffects();
     
@@ -24,6 +27,61 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', stopMessageAutoRefresh);
     window.addEventListener('pagehide', stopMessageAutoRefresh);
 });
+
+// ===== THEME SYSTEM =====
+function initThemeSystem() {
+    // Load saved theme preference or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    
+    // Set up theme toggle button event listener
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        updateThemeToggleButton(savedTheme);
+    }
+}
+
+function setTheme(theme) {
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Save to localStorage
+    localStorage.setItem('theme', theme);
+    
+    // Update toggle button
+    updateThemeToggleButton(theme);
+    
+    console.log(`Theme set to: ${theme}`);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    setTheme(newTheme);
+    
+    // Show notification about theme change
+    showNotification(`Switched to ${newTheme} theme`, 'info');
+}
+
+function updateThemeToggleButton(theme) {
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (!themeToggle) return;
+    
+    // Update button text and icon based on current theme
+    if (theme === 'light') {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+        themeToggle.setAttribute('title', 'Switch to dark theme');
+    } else {
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+        themeToggle.setAttribute('title', 'Switch to light theme');
+    }
+}
+
+function getCurrentTheme() {
+    return document.documentElement.getAttribute('data-theme') || 'light';
+}
 
 // ===== CYBERPUNK EFFECTS SYSTEM =====
 function initCyberpunkEffects() {
