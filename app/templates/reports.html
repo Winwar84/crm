@@ -6,8 +6,16 @@
     <title>Report e Analytics - CRM Pro</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // Fix for exports error in browser environment
+        if (typeof exports === 'undefined') {
+            window.exports = {};
+        }
+        if (typeof module === 'undefined') {
+            window.module = {};
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -19,7 +27,6 @@
                 <li><a href="/"><i class="fas fa-dashboard"></i> Dashboard</a></li>
                 <li><a href="/tickets"><i class="fas fa-ticket-alt"></i> Ticket</a></li>
                 <li><a href="/customers"><i class="fas fa-users"></i> Clienti</a></li>
-                <li><a href="/agents"><i class="fas fa-user-tie"></i> Agenti</a></li>
                 <li><a href="/settings"><i class="fas fa-cogs"></i> Impostazioni</a></li>
                 <li><a href="/reports" class="active"><i class="fas fa-chart-bar"></i> Report</a></li>
             </ul>

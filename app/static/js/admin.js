@@ -177,6 +177,14 @@ function displayAllUsers() {
                 <div style="margin-top: 12px; font-size: 12px; color: #6c757d;">
                     Registrato: ${formatDate(user.created_at)}
                 </div>
+                
+                ${user.status === 'rejected' ? `
+                    <div class="user-actions" style="margin-top: 12px;">
+                        <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
+                            <i class="fas fa-trash"></i> Elimina
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
     }).join('');
@@ -274,6 +282,61 @@ async function confirmRejectUser(userId, fullName) {
         }
     } catch (error) {
         console.error('Errore nel rifiuto:', error);
+        showNotification('Errore di connessione', 'error');
+    }
+}
+
+// Delete user completely
+async function deleteUser() {
+    const userId = document.getElementById('approveUserId').value;
+    
+    if (!confirm('Sei sicuro di voler eliminare definitivamente questo utente? Questa azione non può essere annullata.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetchWithAuth(`/api/auth/users/${userId}/delete`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Utente eliminato con successo', 'success');
+            closeApproveUserModal();
+            loadPendingUsers();
+            loadAllUsers();
+        } else {
+            showNotification(data.error || 'Errore nell\'eliminazione dell\'utente', 'error');
+        }
+    } catch (error) {
+        console.error('Errore nell\'eliminazione:', error);
+        showNotification('Errore di connessione', 'error');
+    }
+}
+
+// Delete rejected user (direct from user card)
+async function confirmDeleteRejectedUser(userId, fullName) {
+    if (!confirm(`Sei sicuro di voler eliminare definitivamente l'utente "${fullName}"? Questa azione non può essere annullata.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetchWithAuth(`/api/auth/users/${userId}/delete`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Utente eliminato con successo', 'success');
+            loadPendingUsers();
+            loadAllUsers();
+        } else {
+            showNotification(data.error || 'Errore nell\'eliminazione dell\'utente', 'error');
+        }
+    } catch (error) {
+        console.error('Errore nell\'eliminazione:', error);
         showNotification('Errore di connessione', 'error');
     }
 }
@@ -435,6 +498,14 @@ function filterUsers() {
                 <div style="margin-top: 12px; font-size: 12px; color: #6c757d;">
                     Registrato: ${formatDate(user.created_at)}
                 </div>
+                
+                ${user.status === 'rejected' ? `
+                    <div class="user-actions" style="margin-top: 12px;">
+                        <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
+                            <i class="fas fa-trash"></i> Elimina
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
     }).join('');

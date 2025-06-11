@@ -513,6 +513,12 @@ def approve_user(user_id):
     
     user = UserService.approve_user(user_id, role)
     if user:
+        # Invia email di attivazione
+        try:
+            EmailService.send_user_activation_email(user)
+        except Exception as e:
+            print(f"Errore nell'invio email di attivazione: {e}")
+        
         return jsonify({'message': 'Utente approvato con successo', 'user': user})
     else:
         return jsonify({'error': 'Errore nell\'approvazione dell\'utente'}), 500
@@ -529,6 +535,19 @@ def reject_user(user_id):
         return jsonify({'message': 'Utente rifiutato con successo'})
     else:
         return jsonify({'error': 'Errore nel rifiuto dell\'utente'}), 500
+
+@app.route('/api/auth/users/<int:user_id>/delete', methods=['DELETE'])
+@token_required
+def delete_user(user_id):
+    """Elimina completamente un utente (solo per admin)"""
+    if request.current_user['role'] not in ['admin', 'technical']:
+        return jsonify({'error': 'Accesso negato'}), 403
+    
+    success = UserService.delete_user(user_id)
+    if success:
+        return jsonify({'message': 'Utente eliminato con successo'})
+    else:
+        return jsonify({'error': 'Errore nell\'eliminazione dell\'utente'}), 500
 
 @app.route('/api/auth/users/<int:user_id>/permissions', methods=['PUT'])
 @token_required

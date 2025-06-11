@@ -504,6 +504,22 @@ class UserService:
             return None
     
     @staticmethod
+    def delete_user(user_id):
+        """Elimina completamente un utente"""
+        try:
+            from task_helper import delete_from_supabase
+            
+            result = delete_from_supabase('users', {'id': user_id})
+            
+            if result:
+                print(f"Utente {user_id} eliminato con successo")
+                return True
+            return False
+        except Exception as e:
+            print(f"Errore nell'eliminazione utente: {e}")
+            return False
+    
+    @staticmethod
     def update_user_permissions(user_id, role=None, status=None):
         """Aggiorna ruolo e status di un utente"""
         try:

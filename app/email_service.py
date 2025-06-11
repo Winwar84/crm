@@ -841,6 +841,158 @@ Il Sistema CRM"""
         except Exception as e:
             print(f"Errore nell'invio messaggio ticket agli agenti: {e}")
             return False
+    
+    @staticmethod
+    def send_user_activation_email(user):
+        """Invia email di attivazione account a un utente approvato"""
+        try:
+            config = EmailService.get_smtp_config()
+            if not config:
+                print("❌ Configurazione SMTP non trovata per email attivazione")
+                return False
+            
+            # Prepara il contenuto dell'email
+            subject = "Account CRM Pro Attivato"
+            
+            # Template HTML per email di attivazione
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        font-family: Arial, sans-serif;
+                        background-color: #f8f9fa;
+                    }}
+                    .email-header {{
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                        border-radius: 10px 10px 0 0;
+                    }}
+                    .email-body {{
+                        background: white;
+                        padding: 30px;
+                        border-radius: 0 0 10px 10px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }}
+                    .activation-card {{
+                        background: #e8f5e8;
+                        border-left: 4px solid #28a745;
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-radius: 4px;
+                    }}
+                    .user-info {{
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 15px 0;
+                    }}
+                    .footer {{
+                        text-align: center;
+                        color: #6c757d;
+                        font-size: 12px;
+                        margin-top: 20px;
+                        padding-top: 20px;
+                        border-top: 1px solid #dee2e6;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="email-header">
+                        <h1>🎉 Account Attivato!</h1>
+                        <p>Il tuo account CRM Pro è stato approvato</p>
+                    </div>
+                    
+                    <div class="email-body">
+                        <div class="activation-card">
+                            <h3>✅ Congratulazioni!</h3>
+                            <p>Il tuo account è stato approvato dall'amministratore e ora puoi accedere al sistema CRM Pro.</p>
+                        </div>
+                        
+                        <div class="user-info">
+                            <h4>Dettagli Account:</h4>
+                            <p><strong>Nome:</strong> {user.get('full_name', 'N/A')}</p>
+                            <p><strong>Username:</strong> {user.get('username', 'N/A')}</p>
+                            <p><strong>Email:</strong> {user.get('email', 'N/A')}</p>
+                            <p><strong>Ruolo:</strong> {user.get('role', 'N/A').title()}</p>
+                        </div>
+                        
+                        <h4>Prossimi Passi:</h4>
+                        <ol>
+                            <li>Accedi al sistema CRM Pro con le tue credenziali</li>
+                            <li>Completa il tuo profilo se necessario</li>
+                            <li>Inizia a gestire ticket e clienti</li>
+                        </ol>
+                        
+                        <p>Se hai domande o problemi di accesso, contatta l'amministratore di sistema.</p>
+                        
+                        <div class="footer">
+                            <p>Questa email è stata generata automaticamente dal sistema CRM Pro.</p>
+                            <p>Data di attivazione: {datetime.now().strftime('%d/%m/%Y alle %H:%M')}</p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Versione testo semplice
+            text_body = f"""
+            Account CRM Pro Attivato
+            
+            Congratulazioni! Il tuo account è stato approvato dall'amministratore.
+            
+            Dettagli Account:
+            - Nome: {user.get('full_name', 'N/A')}
+            - Username: {user.get('username', 'N/A')}
+            - Email: {user.get('email', 'N/A')}
+            - Ruolo: {user.get('role', 'N/A').title()}
+            
+            Ora puoi accedere al sistema CRM Pro con le tue credenziali.
+            
+            Se hai domande, contatta l'amministratore di sistema.
+            
+            Data di attivazione: {datetime.now().strftime('%d/%m/%Y alle %H:%M')}
+            """
+            
+            # Crea il messaggio multipart
+            msg = MIMEMultipart('alternative')
+            msg['From'] = f"{config.get('from_name', 'CRM Pro')} <{config.get('from_email', config['username'])}>"
+            msg['To'] = user['email']
+            msg['Subject'] = subject
+            
+            # Aggiungi entrambe le versioni
+            text_part = MIMEText(text_body, 'plain', 'utf-8')
+            html_part = MIMEText(html_body, 'html', 'utf-8')
+            
+            msg.attach(text_part)
+            msg.attach(html_part)
+            
+            # Invia l'email
+            context = ssl.create_default_context()
+            with smtplib.SMTP(config['host'], config['port']) as smtp:
+                if config.get('security') == 'TLS':
+                    smtp.starttls(context=context)
+                elif config.get('security') == 'SSL':
+                    smtp = smtplib.SMTP_SSL(config['host'], config['port'], context=context)
+                
+                smtp.login(config['username'], config['password'])
+                smtp.send_message(msg)
+                smtp.quit()
+            
+            print(f"✅ Email di attivazione inviata a {user['email']}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Errore nell'invio email di attivazione: {e}")
+            return False
 
 class EmailMonitor:
     """Monitor per il controllo automatico delle email"""
