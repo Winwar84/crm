@@ -427,8 +427,8 @@ document.head.appendChild(cyberpunkStyles);
 function initSystemHUD() {
     updateSystemStatus();
     
-    // Update HUD every 5 seconds
-    setInterval(updateSystemStatus, 5000);
+    // Update HUD every 30 seconds (reduced frequency to avoid spam)
+    setInterval(updateSystemStatus, 30000);
 }
 
 function updateSystemStatus() {
@@ -449,14 +449,28 @@ function updateSystemStatus() {
     // Network status
     const netStatus = document.getElementById('net-status');
     if (netStatus) {
-        // Check if we can make requests
-        fetch('/api/stats', { method: 'HEAD' })
-            .then(() => {
-                netStatus.className = 'hud-indicator active';
+        // Check if we can make authenticated requests
+        const token = localStorage.getItem('user_token');
+        if (token) {
+            fetch('/api/stats', { 
+                method: 'HEAD',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             })
-            .catch(() => {
-                netStatus.className = 'hud-indicator error';
-            });
+                .then(response => {
+                    if (response.ok) {
+                        netStatus.className = 'hud-indicator active';
+                    } else {
+                        netStatus.className = 'hud-indicator warning';
+                    }
+                })
+                .catch(() => {
+                    netStatus.className = 'hud-indicator error';
+                });
+        } else {
+            netStatus.className = 'hud-indicator error';
+        }
     }
 }
 
