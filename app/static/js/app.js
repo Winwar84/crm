@@ -907,9 +907,21 @@ async function openTicketDetails(ticketId) {
             return;
         }
         
-        // Main content area - ticket description and details + chat
+        // Populate header section with ticket title and description
+        const titleElement = document.getElementById('ticketProblemTitle');
+        const descriptionElement = document.getElementById('ticketProblemDescription');
+        
+        if (titleElement) {
+            titleElement.textContent = ticket.title;
+        }
+        
+        if (descriptionElement) {
+            descriptionElement.textContent = ticket.description;
+        }
+        
+        // Main content area - No longer needed, using new layout structure
         const mainContent = document.getElementById('ticketMainContent');
-        if (mainContent) {
+        if (mainContent && false) { // Disabled for new layout
             mainContent.innerHTML = `
                 <div class="ticket-main-view">
                     <div class="ticket-header">
@@ -980,12 +992,14 @@ async function openTicketDetails(ticketId) {
                 </div>
             `;
             
-            // Carica i messaggi del ticket
-            loadTicketMessages(ticket.id);
-            
-            // Avvia auto-refresh per i messaggi
-            startMessageAutoRefresh(ticket.id);
         }
+        
+        // Set current ticket ID for message form
+        currentTicketId = ticket.id;
+        
+        // Load ticket messages and start auto-refresh (moved from disabled block)
+        loadTicketMessages(ticket.id);
+        startMessageAutoRefresh(ticket.id);
         
         // Sidebar content - compact ticket details
         const detailsContent = document.getElementById('ticketDetailsContent');

@@ -190,6 +190,8 @@
                                 <option value="Urgent">Urgente</option>
                             </select>
                         </div>
+                        
+                        <button type="submit" class="btn-submit">Crea Ticket</button>
                     </div>
                     
                     <!-- Colonna destra - Campi di gestione -->
@@ -253,8 +255,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn-submit">Crea Ticket</button>
             </form>
             </div>
         </div>
@@ -322,8 +322,47 @@
                     <span class="close" onclick="closeModal('ticketDetailsModal')">&times;</span>
                 </div>
                 <div class="modal-body">
-                    <div id="ticketMainContent">
-                        <!-- Main ticket content will be populated by JavaScript -->
+                    <!-- Ticket Header Section -->
+                    <div class="ticket-header-section">
+                        <div class="ticket-problem-overview">
+                            <h3 id="ticketProblemTitle">Titolo del Problema</h3>
+                            <div class="ticket-problem-description">
+                                <p id="ticketProblemDescription">Descrizione della problematica...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Section -->
+                    <div class="ticket-chat-section">
+                        <div class="chat-header">
+                            <h4><i class="fas fa-comments"></i> Conversazione</h4>
+                            <div class="chat-controls">
+                                <button type="button" class="btn btn-sm secondary" onclick="refreshTicketMessages()">
+                                    <i class="fas fa-sync-alt"></i> Aggiorna
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chat-container">
+                            <div id="ticketMessages" class="chat-messages">
+                                <!-- Messages will be populated by JavaScript -->
+                            </div>
+                            <div class="chat-input-section">
+                                <form id="messageForm" onsubmit="sendTicketMessage(event, currentTicketId)">
+                                    <div class="message-input-group">
+                                        <textarea id="messageText" placeholder="Scrivi un messaggio..." rows="3" required></textarea>
+                                        <div class="message-controls">
+                                            <label class="internal-note-checkbox">
+                                                <input type="checkbox" id="isInternalMessage">
+                                                <span>Nota interna (solo agenti)</span>
+                                            </label>
+                                            <button type="submit" class="btn primary">
+                                                <i class="fas fa-paper-plane"></i> Invia
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
