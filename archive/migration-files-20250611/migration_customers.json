@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Matteo",
+    "email": "winwar84@gmail.com",
+    "phone": "0107545465",
+    "company": "Vinciinside",
+    "address": "",
+    "notes": "",
+    "status": "Active",
+    "created_at": "2025-06-09 08:11:09",
+    "updated_at": "2025-06-09 08:11:09"
+  }
+]

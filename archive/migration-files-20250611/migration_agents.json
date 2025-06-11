@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Matteo",
+    "email": "matteo.vinciguerra@vinciinside.it",
+    "department": "Support",
+    "created_at": "2025-06-09 08:03:51"
+  },
+  {
+    "id": 2,
+    "name": "Guido",
+    "email": "alebuju@yahoo.it",
+    "department": "Billing",
+    "created_at": "2025-06-09 08:27:41"
+  }
+]

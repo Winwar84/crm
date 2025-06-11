@@ -13,6 +13,27 @@ let currentAgent = null;
 let autoRefreshInterval = null;
 let currentTicketId = null;
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     checkAuthentication();
@@ -717,15 +738,15 @@ function displayRecentTickets(ticketList) {
     
     container.innerHTML = ticketList.map(ticket => `
         <div class="ticket-item" onclick="openTicketDetails(${ticket.id})" style="cursor: pointer;">
-            <div class="ticket-title">#${ticket.id} - ${ticket.title}</div>
+            <div class="ticket-title">#${ticket.id} - ${escapeHtml(ticket.title)}</div>
             <div class="ticket-meta">
-                <span>${ticket.customer_name}</span>
-                <span class="priority-badge priority-${ticket.priority}">${ticket.priority}</span>
+                <span>${escapeHtml(ticket.customer_name)}</span>
+                <span class="priority-badge priority-${sanitizeForAttribute(ticket.priority)}">${escapeHtml(ticket.priority)}</span>
                 <span>${formatDate(ticket.created_at)}</span>
             </div>
             <div class="ticket-status">
-                <span class="status-badge status-${ticket.status.replace(' ', '-')}">${ticket.status}</span>
-                ${ticket.assigned_to ? `<span class="assigned-to">→ ${ticket.assigned_to}</span>` : '<span class="unassigned">Non assegnato</span>'}
+                <span class="status-badge status-${sanitizeForAttribute(ticket.status.replace(' ', '-'))}">${escapeHtml(ticket.status)}</span>
+                ${ticket.assigned_to ? `<span class="assigned-to">→ ${escapeHtml(ticket.assigned_to)}</span>` : '<span class="unassigned">Non assegnato</span>'}
             </div>
         </div>
     `).join('');
@@ -2166,7 +2187,7 @@ async function loadTicketMessages(ticketId) {
                         <div class="message-time">${formatMessageDate(messageDate)}</div>
                     </div>
                     <div class="message-content">
-                        ${message.message_text.replace(/\n/g, '<br>')}
+                        ${escapeHtml(message.message_text).replace(/\n/g, '<br>')}
                     </div>
                 </div>
             `;

@@ -1,0 +1,112 @@
+{
+  "analysis_date": "2025-06-11T20:33:33.248554",
+  "sqlite_database": "/home/winwar84/crm/database/freshdesk_clone.db",
+  "sqlite_tables": {
+    "tickets": {
+      "count": 2,
+      "has_data": true,
+      "fields": [
+        "id",
+        "title",
+        "description",
+        "priority",
+        "status",
+        "customer_email",
+        "customer_name",
+        "assigned_to",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "sqlite_sequence": {
+      "count": 3,
+      "has_data": true,
+      "fields": [
+        "name",
+        "seq"
+      ]
+    },
+    "agents": {
+      "count": 2,
+      "has_data": true,
+      "fields": [
+        "id",
+        "name",
+        "email",
+        "department",
+        "created_at"
+      ]
+    },
+    "comments": {
+      "count": 0,
+      "has_data": false,
+      "fields": [
+        "id",
+        "ticket_id",
+        "author",
+        "content",
+        "created_at"
+      ]
+    },
+    "customers": {
+      "count": 1,
+      "has_data": true,
+      "fields": [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "company",
+        "address",
+        "notes",
+        "status",
+        "created_at",
+        "updated_at"
+      ]
+    }
+  },
+  "supabase_tables": {
+    "tickets": {
+      "count": 2,
+      "has_data": true,
+      "error": null
+    },
+    "customers": {
+      "count": 2,
+      "has_data": true,
+      "error": null
+    },
+    "users": {
+      "count": 4,
+      "has_data": true,
+      "error": null
+    },
+    "agents": {
+      "count": 0,
+      "has_data": false,
+      "error": null
+    },
+    "ticket_messages": {
+      "count": 19,
+      "has_data": true,
+      "error": null
+    },
+    "email_settings": {
+      "count": 2,
+      "has_data": true,
+      "error": null
+    }
+  },
+  "migration_recommendations": [
+    {
+      "table": "sqlite_sequence",
+      "action": "full_migration",
+      "reason": "3 records in SQLite, 0 in Supabase"
+    },
+    {
+      "table": "agents",
+      "action": "full_migration",
+      "reason": "2 records in SQLite, 0 in Supabase"
+    }
+  ]
+}

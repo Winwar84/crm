@@ -12,6 +12,19 @@ from datetime import datetime
 import time
 import threading
 
+def sanitize_config_for_logging(config):
+    """Rimuove dati sensibili dalla configurazione per il logging sicuro"""
+    if not config or not isinstance(config, dict):
+        return config
+    
+    sanitized = config.copy()
+    # Rimuovi campi sensibili
+    sensitive_fields = ['password', 'api_key', 'secret', 'token', 'auth']
+    for field in sensitive_fields:
+        if field in sanitized:
+            sanitized[field] = '***HIDDEN***'
+    return sanitized
+
 class EmailService:
     @staticmethod
     def get_smtp_config():
@@ -28,7 +41,7 @@ class EmailService:
                 # Decodifica la configurazione JSON
                 if config_data.get('config'):
                     config = json.loads(config_data['config'])
-                    print(f"📧 Configurazione SMTP recuperata via MCP: {config}")
+                    print(f"📧 Configurazione SMTP recuperata via MCP: {sanitize_config_for_logging(config)}")
                     return config
                     
             print("❌ Nessuna configurazione SMTP trovata")
@@ -53,7 +66,7 @@ class EmailService:
                 # Decodifica la configurazione JSON
                 if config_data.get('config'):
                     config = json.loads(config_data['config'])
-                    print(f"📬 Configurazione IMAP recuperata via MCP: {config}")
+                    print(f"📬 Configurazione IMAP recuperata via MCP: {sanitize_config_for_logging(config)}")
                     return config
                     
             print("❌ Nessuna configurazione IMAP trovata")
@@ -70,7 +83,7 @@ class EmailService:
             from task_helper import save_to_supabase
             import json
             
-            print(f"💾 Tentativo salvataggio SMTP config via MCP: {config}")
+            print(f"💾 Tentativo salvataggio SMTP config via MCP: {sanitize_config_for_logging(config)}")
             
             # Prepara i dati per il database
             data = {
@@ -83,7 +96,7 @@ class EmailService:
             result = save_to_supabase('email_settings', data, on_conflict='type')
             
             if result:
-                print(f"✅ Configurazione SMTP salvata via MCP: {result}")
+                print(f"✅ Configurazione SMTP salvata via MCP: {sanitize_config_for_logging(result)}")
                 return True
             else:
                 print("❌ Errore nel salvataggio via MCP")
@@ -100,7 +113,7 @@ class EmailService:
             from task_helper import save_to_supabase
             import json
             
-            print(f"📬 Tentativo salvataggio IMAP config via MCP: {config}")
+            print(f"📬 Tentativo salvataggio IMAP config via MCP: {sanitize_config_for_logging(config)}")
             
             # Prepara i dati per il database
             data = {
@@ -113,7 +126,7 @@ class EmailService:
             result = save_to_supabase('email_settings', data, on_conflict='type')
             
             if result:
-                print(f"✅ Configurazione IMAP salvata via MCP: {result}")
+                print(f"✅ Configurazione IMAP salvata via MCP: {sanitize_config_for_logging(result)}")
                 return True
             else:
                 print("❌ Errore nel salvataggio via MCP")
@@ -427,7 +440,7 @@ Il Team di Supporto"""
     def check_emails_and_create_tickets():
         """Controlla le email in arrivo e crea ticket automaticamente"""
         config = EmailService.get_imap_config()
-        print(f"🔍 IMAP check - Config: {config}")
+        print(f"🔍 IMAP check - Config: {sanitize_config_for_logging(config)}")
         
         if not config:
             print("❌ Nessuna configurazione IMAP trovata")

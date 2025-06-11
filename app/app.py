@@ -82,6 +82,7 @@ def admin_page():
     return render_template('admin.html')
 
 @app.route('/api/tickets', methods=['GET', 'POST'])
+@token_required
 def api_tickets():
     if request.method == 'GET':
         tickets = TicketService.get_all()
@@ -138,6 +139,7 @@ def api_tickets():
             return jsonify({'error': 'Errore nella creazione del ticket'}), 500
 
 @app.route('/api/tickets/<int:ticket_id>', methods=['PUT', 'DELETE'])
+@token_required
 def update_or_delete_ticket(ticket_id):
     if request.method == 'DELETE':
         # Elimina il ticket
@@ -213,6 +215,7 @@ def update_or_delete_ticket(ticket_id):
 
 # API per messaggi dei ticket (chat)
 @app.route('/api/tickets/<int:ticket_id>/messages', methods=['GET', 'POST'])
+@token_required
 def ticket_messages(ticket_id):
     """Gestisce i messaggi di un ticket"""
     try:
@@ -277,6 +280,7 @@ def ticket_messages(ticket_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tickets/<int:ticket_id>/messages/<int:message_id>', methods=['PUT', 'DELETE'])
+@token_required
 def manage_ticket_message(ticket_id, message_id):
     """Gestisce un messaggio specifico"""
     try:
@@ -315,12 +319,14 @@ def manage_ticket_message(ticket_id, message_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/agents', methods=['GET'])
+@token_required
 def api_agents():
     agents = AgentService.get_all()
     return jsonify(agents)
 
 
 @app.route('/api/agents/<int:agent_id>', methods=['PUT', 'DELETE'])
+@token_required
 def manage_agent(agent_id):
     if request.method == 'PUT':
         data = request.json
@@ -371,6 +377,7 @@ def manage_agent(agent_id):
             return jsonify({'error': str(e)}), 500
 
 @app.route('/api/customers', methods=['GET', 'POST'])
+@token_required
 def api_customers():
     if request.method == 'GET':
         customers = CustomerService.get_all()
@@ -395,6 +402,7 @@ def api_customers():
             return jsonify({'error': 'Errore nella creazione del cliente'}), 500
 
 @app.route('/api/customers/<int:customer_id>', methods=['PUT', 'DELETE'])
+@token_required
 def manage_customer(customer_id):
     if request.method == 'PUT':
         data = request.json
@@ -422,6 +430,7 @@ def manage_customer(customer_id):
             return jsonify({'error': 'Errore nell\'eliminazione del cliente'}), 500
 
 @app.route('/api/stats')
+@token_required
 def api_stats():
     stats = get_stats()
     return jsonify(stats)
@@ -583,6 +592,7 @@ def reports():
 
 # API Endpoints per configurazioni
 @app.route('/api/config/software', methods=['GET', 'POST'])
+@token_required
 def config_software():
     """Gestisce le opzioni software"""
     try:
@@ -626,6 +636,7 @@ def config_software():
         return jsonify({'message': 'Configurazione salvata localmente'}), 200
 
 @app.route('/api/config/groups', methods=['GET', 'POST'])
+@token_required
 def config_groups():
     """Gestisce le opzioni gruppi"""
     try:
@@ -664,6 +675,7 @@ def config_groups():
         return jsonify({'message': 'Configurazione salvata localmente'}), 200
 
 @app.route('/api/config/types', methods=['GET', 'POST'])
+@token_required
 def config_types():
     """Gestisce le opzioni tipi"""
     try:
@@ -704,6 +716,7 @@ def config_types():
         return jsonify({'message': 'Configurazione salvata localmente'}), 200
 
 @app.route('/api/config/system', methods=['GET', 'POST'])
+@token_required
 def config_system():
     """Gestisce le impostazioni di sistema"""
     try:
@@ -739,14 +752,15 @@ def config_system():
 
 # API Endpoints per Email
 @app.route('/api/email/smtp', methods=['GET', 'POST'])
+@token_required
 def email_smtp_config():
     """Gestisce la configurazione SMTP"""
     if request.method == 'GET':
         config = EmailService.get_smtp_config()
         if config:
-            # Mostra che la password esiste ma non il valore effettivo
+            # Rimuovi la password dalla risposta per sicurezza
             if config.get('password'):
-                config['password'] = config['password']  # Mostra la password effettiva
+                config['password'] = '***CONFIGURED***'  # Non mostrare mai la password
             return jsonify(config)
         return jsonify({})
     
@@ -758,14 +772,15 @@ def email_smtp_config():
         return jsonify({'error': 'Errore nel salvataggio configurazione SMTP'}), 500
 
 @app.route('/api/email/imap', methods=['GET', 'POST'])
+@token_required
 def email_imap_config():
     """Gestisce la configurazione IMAP"""
     if request.method == 'GET':
         config = EmailService.get_imap_config()
         if config:
-            # Mostra la password effettiva per IMAP
+            # Rimuovi la password dalla risposta per sicurezza
             if config.get('password'):
-                config['password'] = config['password']  # Mostra la password effettiva
+                config['password'] = '***CONFIGURED***'  # Non mostrare mai la password
             return jsonify(config)
         return jsonify({})
     
@@ -784,6 +799,7 @@ def email_imap_config():
         return jsonify({'error': 'Errore nel salvataggio configurazione IMAP'}), 500
 
 @app.route('/api/email/test-smtp', methods=['POST'])
+@token_required
 def test_smtp():
     """Testa la connessione SMTP"""
     data = request.json
@@ -793,6 +809,7 @@ def test_smtp():
     return jsonify({'error': message}), 400
 
 @app.route('/api/email/test-imap', methods=['POST'])
+@token_required
 def test_imap():
     """Testa la connessione IMAP"""
     data = request.json
@@ -802,6 +819,7 @@ def test_imap():
     return jsonify({'error': message}), 400
 
 @app.route('/api/email/status', methods=['GET'])
+@token_required
 def email_status():
     """Restituisce lo status delle configurazioni email"""
     print("🚨 EMAIL STATUS ENDPOINT CALLED!")
@@ -883,6 +901,7 @@ def email_status():
         })
 
 @app.route('/api/email/templates', methods=['GET', 'POST'])
+@token_required
 def email_templates():
     """Gestisce i template email"""
     if request.method == 'GET':
@@ -943,6 +962,7 @@ Il Team di Supporto'''
         return jsonify({'error': 'Errore nel salvataggio template'}), 500
 
 @app.route('/api/email/check-now', methods=['POST'])
+@token_required
 def check_emails_now():
     """Forza il controllo immediato delle email"""
     try:
@@ -952,23 +972,27 @@ def check_emails_now():
         return jsonify({'error': f'Errore nel controllo email: {str(e)}'}), 500
 
 @app.route('/api/email/monitor/status', methods=['GET'])
+@token_required
 def email_monitor_status():
     """Stato del monitor email"""
     return jsonify({'running': email_monitor.running})
 
 @app.route('/api/email/monitor/start', methods=['POST'])
+@token_required
 def start_email_monitor():
     """Avvia il monitor email"""
     email_monitor.start()
     return jsonify({'message': 'Monitor email avviato'})
 
 @app.route('/api/email/monitor/stop', methods=['POST'])
+@token_required
 def stop_email_monitor():
     """Ferma il monitor email"""
     email_monitor.stop()
     return jsonify({'message': 'Monitor email fermato'})
 
 @app.route('/api/email/monitor/check', methods=['POST'])
+@token_required
 def check_email_monitor():
     """Esegue un controllo manuale delle email"""
     try:
@@ -979,6 +1003,7 @@ def check_email_monitor():
 
 # Reports API Endpoints
 @app.route('/api/reports/kpi', methods=['GET'])
+@token_required
 def reports_kpi():
     """Recupera i KPI principali"""
     try:
@@ -1044,6 +1069,7 @@ def reports_kpi():
         })
 
 @app.route('/api/reports/ticket-trends', methods=['GET'])
+@token_required
 def reports_ticket_trends():
     """Recupera i trend dei ticket"""
     try:
