@@ -49,6 +49,16 @@ function showTab(tabName) {
     
     // Add active class to clicked tab button
     event.target.classList.add('active');
+    
+    // Load data for specific tabs
+    if (tabName === 'agents-management') {
+        loadAllAgents();
+        loadAgentStats();
+    } else if (tabName === 'admin-panel') {
+        loadAdminStats();
+        loadPendingUsers();
+        loadAllUsers();
+    }
 }
 
 // Load all configuration options

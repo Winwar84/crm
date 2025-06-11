@@ -24,8 +24,40 @@
 
         <main class="main-content">
             <header class="top-header">
-                <h1>Dashboard</h1>
+                <h1>COMMAND CENTER</h1>
                 <div class="header-right">
+                    <!-- System Status HUD -->
+                    <div class="system-hud">
+                        <div class="hud-item">
+                            <div class="hud-indicator active" id="system-status"></div>
+                            <span>SYS</span>
+                        </div>
+                        <div class="hud-item">
+                            <div class="hud-indicator active" id="db-status"></div>
+                            <span>DB</span>
+                        </div>
+                        <div class="hud-item">
+                            <div class="hud-indicator active" id="net-status"></div>
+                            <span>NET</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Real-time Clock -->
+                    <div class="cyber-clock">
+                        <div id="current-time" class="time-display"></div>
+                        <div class="time-label">SYSTEM TIME</div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="btn primary btn-sm" onclick="openNewTicketModal()">
+                            <i class="fas fa-plus"></i> TICKET
+                        </button>
+                        <button class="btn secondary btn-sm" onclick="openNewCustomerModal()">
+                            <i class="fas fa-user-plus"></i> CLIENT
+                        </button>
+                    </div>
+                    
                     <div class="user-display"></div>
                     <button class="logout-btn" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
@@ -149,16 +181,16 @@
                             
                             <div id="newCustomerSection" style="display: none;">
                                 <div class="form-group">
-                                    <label for="customerName">Nome Cliente:</label>
-                                    <input type="text" id="customerName">
+                                    <label for="dashboardCustomerName">Nome Cliente:</label>
+                                    <input type="text" id="dashboardCustomerName">
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerEmail">Email Cliente:</label>
-                                    <input type="email" id="customerEmail">
+                                    <label for="dashboardCustomerEmail">Email Cliente:</label>
+                                    <input type="email" id="dashboardCustomerEmail">
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerPhone">Telefono (opzionale):</label>
-                                    <input type="tel" id="customerPhone">
+                                    <label for="dashboardCustomerPhone">Telefono (opzionale):</label>
+                                    <input type="tel" id="dashboardCustomerPhone">
                                 </div>
                                 <div class="form-group">
                                     <label for="customerCompanyTicket">Azienda (opzionale):</label>

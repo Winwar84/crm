@@ -24,9 +24,12 @@ async function fetchWithAuth(url, options = {}) {
 
 // Initialize agents page
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname === '/agents') {
-        loadAllAgents();
-        setupAgentsEventListeners();
+    if (window.location.pathname === '/agents' || window.location.pathname === '/settings') {
+        // Don't auto-load on settings page, wait for tab switch
+        if (window.location.pathname === '/agents') {
+            loadAllAgents();
+            setupAgentsEventListeners();
+        }
     }
 });
 

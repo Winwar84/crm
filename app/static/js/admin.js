@@ -178,13 +178,11 @@ function displayAllUsers() {
                     Registrato: ${formatDate(user.created_at)}
                 </div>
                 
-                ${user.status === 'rejected' ? `
-                    <div class="user-actions" style="margin-top: 12px;">
-                        <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
-                            <i class="fas fa-trash"></i> Elimina
-                        </button>
-                    </div>
-                ` : ''}
+                <div class="user-actions" style="margin-top: 12px;">
+                    <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
+                        <i class="fas fa-trash"></i> Elimina
+                    </button>
+                </div>
             </div>
         `;
     }).join('');
@@ -315,7 +313,7 @@ async function deleteUser() {
     }
 }
 
-// Delete rejected user (direct from user card)
+// Delete any user (direct from user card)
 async function confirmDeleteRejectedUser(userId, fullName) {
     if (!confirm(`Sei sicuro di voler eliminare definitivamente l'utente "${fullName}"? Questa azione non può essere annullata.`)) {
         return;
@@ -499,13 +497,11 @@ function filterUsers() {
                     Registrato: ${formatDate(user.created_at)}
                 </div>
                 
-                ${user.status === 'rejected' ? `
-                    <div class="user-actions" style="margin-top: 12px;">
-                        <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
-                            <i class="fas fa-trash"></i> Elimina
-                        </button>
-                    </div>
-                ` : ''}
+                <div class="user-actions" style="margin-top: 12px;">
+                    <button class="user-action-btn btn-delete" onclick="confirmDeleteRejectedUser(${user.id}, '${user.full_name}')" title="Elimina">
+                        <i class="fas fa-trash"></i> Elimina
+                    </button>
+                </div>
             </div>
         `;
     }).join('');

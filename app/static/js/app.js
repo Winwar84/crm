@@ -17,10 +17,494 @@ let currentTicketId = null;
 document.addEventListener('DOMContentLoaded', function() {
     checkAuthentication();
     
+    // Initialize cyberpunk effects
+    initCyberpunkEffects();
+    
     // Stop auto-refresh when user navigates away or closes page
     window.addEventListener('beforeunload', stopMessageAutoRefresh);
     window.addEventListener('pagehide', stopMessageAutoRefresh);
 });
+
+// ===== CYBERPUNK EFFECTS SYSTEM =====
+function initCyberpunkEffects() {
+    createFloatingParticles();
+    enhanceLoadingAnimations();
+    addInteractiveElements();
+    initSoundEffects();
+    initSystemHUD();
+    initCyberClock();
+}
+
+// Create floating particles background
+function createFloatingParticles() {
+    const particlesContainer = document.createElement('div');
+    particlesContainer.className = 'particles';
+    document.body.appendChild(particlesContainer);
+    
+    // Create 50 particles
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random positioning
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+        
+        particlesContainer.appendChild(particle);
+    }
+}
+
+// Enhanced loading animations
+function enhanceLoadingAnimations() {
+    // Override original showNotification with cyberpunk style
+    const originalShowNotification = window.showNotification;
+    window.showNotification = function(message, type = 'info') {
+        // Create enhanced notification
+        const notification = document.createElement('div');
+        notification.className = `notification ${type} slide-up`;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="notification-icon">${getNotificationIcon(type)}</div>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Add sound effect
+        playNotificationSound(type);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.3s ease-out forwards';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    };
+}
+
+// Get icon for notification type
+function getNotificationIcon(type) {
+    const icons = {
+        success: '<i class="fas fa-check-circle" style="color: var(--neon-green);"></i>',
+        error: '<i class="fas fa-exclamation-triangle" style="color: #ff4757;"></i>',
+        info: '<i class="fas fa-info-circle" style="color: var(--neon-cyan);"></i>',
+        warning: '<i class="fas fa-exclamation-circle" style="color: var(--neon-yellow);"></i>'
+    };
+    return icons[type] || icons.info;
+}
+
+// Add interactive elements
+function addInteractiveElements() {
+    // Add glow effect to important buttons
+    const importantButtons = document.querySelectorAll('.btn.primary, .btn.success');
+    importantButtons.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            btn.style.animation = 'buttonGlow 0.3s ease-out forwards';
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            btn.style.animation = '';
+        });
+    });
+    
+    // Add matrix rain effect on specific events (optional)
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+            toggleMatrixRain();
+        }
+    });
+}
+
+// Initialize sound effects (optional, can be disabled)
+function initSoundEffects() {
+    // Create audio context for subtle UI sounds
+    window.audioEnabled = localStorage.getItem('audio_enabled') !== 'false';
+    
+    if (window.audioEnabled) {
+        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+// Play notification sound
+function playNotificationSound(type) {
+    if (!window.audioEnabled || !window.audioContext) return;
+    
+    const frequencies = {
+        success: 800,
+        error: 300,
+        info: 600,
+        warning: 500
+    };
+    
+    try {
+        const oscillator = window.audioContext.createOscillator();
+        const gainNode = window.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(window.audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(frequencies[type] || 600, window.audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, window.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, window.audioContext.currentTime + 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, window.audioContext.currentTime + 0.1);
+        
+        oscillator.start(window.audioContext.currentTime);
+        oscillator.stop(window.audioContext.currentTime + 0.1);
+    } catch (e) {
+        // Silently fail if audio context is not available
+    }
+}
+
+// Matrix rain effect (easter egg)
+let matrixActive = false;
+function toggleMatrixRain() {
+    if (matrixActive) return;
+    
+    matrixActive = true;
+    const matrixOverlay = document.createElement('div');
+    matrixOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        pointer-events: none;
+        font-family: 'Courier New', monospace;
+        overflow: hidden;
+    `;
+    
+    document.body.appendChild(matrixOverlay);
+    
+    // Create matrix columns
+    for (let i = 0; i < 50; i++) {
+        const column = document.createElement('div');
+        column.style.cssText = `
+            position: absolute;
+            top: -100px;
+            left: ${i * 2}%;
+            color: var(--neon-green);
+            font-size: 14px;
+            line-height: 1.2;
+            animation: matrixFall ${2 + Math.random() * 3}s linear infinite;
+        `;
+        
+        // Add random characters
+        let text = '';
+        for (let j = 0; j < 20; j++) {
+            text += String.fromCharCode(0x30A0 + Math.random() * 96) + '<br>';
+        }
+        column.innerHTML = text;
+        
+        matrixOverlay.appendChild(column);
+    }
+    
+    // Add matrix animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes matrixFall {
+            to { transform: translateY(100vh); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        matrixOverlay.remove();
+        style.remove();
+        matrixActive = false;
+    }, 5000);
+}
+
+// Enhanced modal animations
+function enhanceModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.addEventListener('show', () => {
+        modal.style.display = 'block';
+        modal.classList.add('fade-in');
+        
+        const content = modal.querySelector('.modal-content');
+        if (content) {
+            content.classList.add('slide-up');
+        }
+    });
+}
+
+// Cyber loading screen
+function showCyberLoading(text = 'PROCESSING...') {
+    const loader = document.createElement('div');
+    loader.id = 'cyber-loader';
+    loader.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-family: 'Orbitron', monospace;
+        ">
+            <div class="loading-spinner" style="
+                width: 60px;
+                height: 60px;
+                border: 3px solid rgba(0, 255, 255, 0.2);
+                border-top: 3px solid var(--neon-cyan);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            "></div>
+            <div style="
+                color: var(--neon-cyan);
+                font-weight: 600;
+                font-size: 1.2rem;
+                letter-spacing: 3px;
+                animation: textGlow 2s ease-in-out infinite alternate;
+            ">${text}</div>
+            <div style="
+                width: 200px;
+                height: 2px;
+                background: rgba(0, 255, 255, 0.2);
+                margin-top: 20px;
+                border-radius: 2px;
+                overflow: hidden;
+            ">
+                <div style="
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+                    animation: progressBar 2s ease-in-out infinite;
+                "></div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(loader);
+    return loader;
+}
+
+function hideCyberLoading() {
+    const loader = document.getElementById('cyber-loader');
+    if (loader) {
+        loader.style.animation = 'fadeOut 0.3s ease-out forwards';
+        setTimeout(() => loader.remove(), 300);
+    }
+}
+
+// Add CSS for new animations
+const cyberpunkStyles = document.createElement('style');
+cyberpunkStyles.textContent = `
+    @keyframes buttonGlow {
+        to {
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+            transform: translateY(-3px) scale(1.05);
+        }
+    }
+    
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+    }
+    
+    @keyframes textGlow {
+        0% { text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        100% { text-shadow: 0 0 40px rgba(0, 255, 255, 1), 0 0 60px rgba(255, 0, 128, 0.5); }
+    }
+    
+    @keyframes progressBar {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(0%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .notification-icon {
+        animation: iconPulse 0.5s ease-out;
+    }
+    
+    @keyframes iconPulse {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+`;
+document.head.appendChild(cyberpunkStyles);
+
+// ===== SYSTEM HUD FUNCTIONS =====
+function initSystemHUD() {
+    updateSystemStatus();
+    
+    // Update HUD every 5 seconds
+    setInterval(updateSystemStatus, 5000);
+}
+
+function updateSystemStatus() {
+    // System status
+    const systemStatus = document.getElementById('system-status');
+    if (systemStatus) {
+        systemStatus.className = 'hud-indicator active';
+    }
+    
+    // Database status (simulate connection check)
+    const dbStatus = document.getElementById('db-status');
+    if (dbStatus) {
+        // Simulate random connection issues (rare)
+        const isHealthy = Math.random() > 0.05; // 95% uptime
+        dbStatus.className = isHealthy ? 'hud-indicator active' : 'hud-indicator warning';
+    }
+    
+    // Network status
+    const netStatus = document.getElementById('net-status');
+    if (netStatus) {
+        // Check if we can make requests
+        fetch('/api/stats', { method: 'HEAD' })
+            .then(() => {
+                netStatus.className = 'hud-indicator active';
+            })
+            .catch(() => {
+                netStatus.className = 'hud-indicator error';
+            });
+    }
+}
+
+// ===== CYBER CLOCK FUNCTIONS =====
+function initCyberClock() {
+    updateCyberClock();
+    
+    // Update clock every second
+    setInterval(updateCyberClock, 1000);
+}
+
+function updateCyberClock() {
+    const timeDisplay = document.getElementById('current-time');
+    if (!timeDisplay) return;
+    
+    const now = new Date();
+    
+    // Format: HH:MM:SS
+    const timeString = now.toLocaleTimeString('it-IT', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    
+    timeDisplay.textContent = timeString;
+    
+    // Add glitch effect occasionally
+    if (Math.random() < 0.01) { // 1% chance
+        glitchClock();
+    }
+}
+
+function glitchClock() {
+    const timeDisplay = document.getElementById('current-time');
+    if (!timeDisplay) return;
+    
+    const originalText = timeDisplay.textContent;
+    const glitchChars = '!@#$%^&*()[]{}|;:,.<>?';
+    
+    // Create glitch text
+    let glitchText = '';
+    for (let i = 0; i < originalText.length; i++) {
+        if (originalText[i] === ':' || originalText[i] === ' ') {
+            glitchText += originalText[i];
+        } else {
+            glitchText += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+        }
+    }
+    
+    // Show glitch briefly
+    timeDisplay.textContent = glitchText;
+    timeDisplay.style.color = '#ff4757';
+    
+    setTimeout(() => {
+        timeDisplay.textContent = originalText;
+        timeDisplay.style.color = 'var(--neon-cyan)';
+    }, 100);
+}
+
+// ===== ENHANCED STATS ANIMATIONS =====
+function animateStatCounter(elementId, targetValue, duration = 2000) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const startValue = 0;
+    const increment = targetValue / (duration / 16); // 60fps
+    let currentValue = startValue;
+    
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= targetValue) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        
+        element.textContent = Math.floor(currentValue);
+        
+        // Add glow effect when updating
+        element.style.textShadow = '0 0 20px currentColor';
+        setTimeout(() => {
+            element.style.textShadow = '';
+        }, 100);
+    }, 16);
+}
+
+// Override loadStats to use animated counters
+const originalLoadStats = window.loadStats;
+if (originalLoadStats) {
+    window.loadStats = function() {
+        originalLoadStats().then(() => {
+            // Animate counters after loading
+            setTimeout(() => {
+                const openTickets = parseInt(document.getElementById('open-tickets')?.textContent || '0');
+                const inProgressTickets = parseInt(document.getElementById('in-progress-tickets')?.textContent || '0');
+                const closedTickets = parseInt(document.getElementById('closed-tickets')?.textContent || '0');
+                const totalTickets = parseInt(document.getElementById('total-tickets')?.textContent || '0');
+                
+                animateStatCounter('open-tickets', openTickets);
+                animateStatCounter('in-progress-tickets', inProgressTickets);
+                animateStatCounter('closed-tickets', closedTickets);
+                animateStatCounter('total-tickets', totalTickets);
+            }, 500);
+        });
+    };
+}
+
+// ===== CYBER LOADING SCREEN INTEGRATION =====
+// Override common functions to show cyber loading
+const originalFetchWithAuth = window.fetchWithAuth;
+if (originalFetchWithAuth) {
+    window.fetchWithAuth = function(url, options = {}) {
+        // Show loading for longer operations
+        const isLongOperation = options.method === 'POST' || options.method === 'PUT' || url.includes('/tickets');
+        let loader = null;
+        
+        if (isLongOperation) {
+            loader = showCyberLoading('PROCESSING REQUEST...');
+        }
+        
+        return originalFetchWithAuth(url, options).finally(() => {
+            if (loader) {
+                setTimeout(() => hideCyberLoading(), 300);
+            }
+        });
+    };
+}
 
 // Authentication functions
 function checkAuthentication() {
@@ -355,9 +839,29 @@ async function handleTicketSubmission(e) {
         formData.customer_name = customerData.name;
         formData.customer_email = customerData.email;
     } else {
-        // New customer
-        const customerName = document.getElementById('customerName').value;
-        const customerEmail = document.getElementById('customerEmail').value;
+        // New customer - use different IDs based on page
+        const isTicketsPage = window.location.pathname === '/tickets';
+        const isDashboard = window.location.pathname === '/';
+        
+        let customerNameId, customerEmailId, customerPhoneId;
+        
+        if (isTicketsPage) {
+            customerNameId = 'newTicketCustomerName';
+            customerEmailId = 'newTicketCustomerEmail';
+            customerPhoneId = 'newTicketCustomerPhone';
+        } else if (isDashboard) {
+            customerNameId = 'dashboardCustomerName';
+            customerEmailId = 'dashboardCustomerEmail';
+            customerPhoneId = 'dashboardCustomerPhone';
+        } else {
+            // Default fallback
+            customerNameId = 'customerName';
+            customerEmailId = 'customerEmail';
+            customerPhoneId = 'customerPhone';
+        }
+        
+        const customerName = document.getElementById(customerNameId).value;
+        const customerEmail = document.getElementById(customerEmailId).value;
         
         if (!customerName || !customerEmail) {
             showNotification('Nome e email del cliente sono obbligatori', 'error');
@@ -366,7 +870,7 @@ async function handleTicketSubmission(e) {
         
         formData.customer_name = customerName;
         formData.customer_email = customerEmail;
-        formData.customer_phone = document.getElementById('customerPhone').value;
+        formData.customer_phone = document.getElementById(customerPhoneId).value;
         formData.customer_company = document.getElementById('customerCompanyTicket').value;
         formData.create_customer = true;
     }

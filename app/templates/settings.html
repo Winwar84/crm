@@ -348,8 +348,8 @@ Il Team di Supporto</textarea>
                         </div>
                     </div>
 
-                    <div class="agents-stats">
-                        <div class="stat-card">
+                    <div class="agents-stats" style="display: flex; gap: 20px; justify-content: space-between; margin-bottom: 20px;">
+                        <div class="stat-card" style="flex: 1;">
                             <div class="stat-icon agents">
                                 <i class="fas fa-users"></i>
                             </div>
@@ -359,7 +359,7 @@ Il Team di Supporto</textarea>
                             </div>
                         </div>
                         
-                        <div class="stat-card">
+                        <div class="stat-card" style="flex: 1;">
                             <div class="stat-icon departments">
                                 <i class="fas fa-building"></i>
                             </div>
@@ -369,13 +369,13 @@ Il Team di Supporto</textarea>
                             </div>
                         </div>
                         
-                        <div class="stat-card">
+                        <div class="stat-card" style="flex: 1;">
                             <div class="stat-icon tickets">
                                 <i class="fas fa-ticket-alt"></i>
                             </div>
                             <div class="stat-content">
                                 <h3 id="assigned-tickets-count">0</h3>
-                                <p>Ticket Assegnati</p>
+                                <p><i class="fas fa-ticket-alt"></i> Ticket Assegnati</p>
                             </div>
                         </div>
                     </div>
@@ -722,6 +722,7 @@ Il Team di Supporto</textarea>
 
     <script src="/static/js/app.js"></script>
     <script src="/static/js/settings.js"></script>
+    <script src="/static/js/agents.js"></script>
     <script src="/static/js/admin.js"></script>
 </body>
 </html>
