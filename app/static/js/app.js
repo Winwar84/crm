@@ -1604,11 +1604,11 @@ async function openTicketDetails(ticketId) {
                         <h3>Informazioni Cliente</h3>
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <label>Nome:</label>
+                                <span class="field-label">Nome:</span>
                                 <span>${ticket.customer_name}</span>
                             </div>
                             <div class="detail-item">
-                                <label>Email:</label>
+                                <span class="field-label">Email:</span>
                                 <span><a href="mailto:${ticket.customer_email}">${ticket.customer_email}</a></span>
                             </div>
                         </div>
@@ -1672,19 +1672,19 @@ async function openTicketDetails(ticketId) {
                     <h3>Informazioni Ticket</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>ID:</label>
+                            <span class="field-label">ID:</span>
                             <span>#${ticket.id}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Priorità:</label>
+                            <span class="field-label">Priorità:</span>
                             <span class="priority-badge priority-${sanitizeForAttribute(ticket.priority)}">${escapeHtml(ticket.priority)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Stato:</label>
+                            <span class="field-label">Stato:</span>
                             <span class="status-badge status-${sanitizeForAttribute(ticket.status.replace(' ', '-'))}">${escapeHtml(ticket.status)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Assegnato a:</label>
+                            <span class="field-label">Assegnato a:</span>
                             <span>${escapeHtml(ticket.assigned_to) || 'Non assegnato'}</span>
                         </div>
                     </div>
@@ -1694,15 +1694,15 @@ async function openTicketDetails(ticketId) {
                     <h3>Classificazione</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>Software:</label>
+                            <span class="field-label">Software:</span>
                             <span>${escapeHtml(ticket.software) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Gruppo:</label>
+                            <span class="field-label">Gruppo:</span>
                             <span>${escapeHtml(ticket.group) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Tipo:</label>
+                            <span class="field-label">Tipo:</span>
                             <span>${escapeHtml(ticket.type) || 'Non specificato'}</span>
                         </div>
                     </div>
@@ -1712,19 +1712,19 @@ async function openTicketDetails(ticketId) {
                     <h3>Assistenza</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>Rapporto Danea:</label>
+                            <span class="field-label">Rapporto Danea:</span>
                             <span>${escapeHtml(ticket.rapporto_danea) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>ID Assistenza:</label>
+                            <span class="field-label">ID Assistenza:</span>
                             <span>${escapeHtml(ticket.id_assistenza) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Password Teleassistenza:</label>
+                            <span class="field-label">Password Teleassistenza:</span>
                             <span>${escapeHtml(ticket.password_teleassistenza) || 'Non specificata'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Numero Richiesta:</label>
+                            <span class="field-label">Numero Richiesta:</span>
                             <span>${escapeHtml(ticket.numero_richiesta_teleassistenza) || 'Non specificato'}</span>
                         </div>
                     </div>
@@ -1928,11 +1928,11 @@ async function makeTicketDetailsEditable(ticketId) {
                                 </select>
                             </div>
                             <div class="detail-item">
-                                <label>Creato:</label>
+                                <span class="field-label">Creato:</span>
                                 <span>${formatDate(ticket.created_at)}</span>
                             </div>
                             <div class="detail-item">
-                                <label>Ultimo aggiornamento:</label>
+                                <span class="field-label">Ultimo aggiornamento:</span>
                                 <span>${formatDate(ticket.updated_at)}</span>
                             </div>
                         </div>
@@ -2118,8 +2118,10 @@ async function handleEditableTicketSubmission(e) {
         
         if (response.ok) {
             showNotification('Ticket aggiornato con successo!', 'success');
-            // Switch back to read-only view instead of triggering a loop
-            await displayTicketDetailsReadOnly(ticketId);
+            console.log('✅ Ticket salvato, switching a read-only mode...');
+            // Switch back to read-only view with fresh data
+            await displayTicketDetailsReadOnly(ticketId, true); // Force fetch fresh data
+            console.log('✅ Read-only mode attivato');
             // Refresh background data
             loadRecentTickets();
             loadStats();
@@ -2138,16 +2140,21 @@ function cancelEditTicketDetails(ticketId) {
 }
 
 // Display ticket details in read-only mode (safe, no loops)
-async function displayTicketDetailsReadOnly(ticketId) {
+async function displayTicketDetailsReadOnly(ticketId, forceFetch = false) {
+    console.log(`🔄 displayTicketDetailsReadOnly chiamata per ticket ${ticketId}, forceFetch: ${forceFetch}`);
     try {
-        // Find ticket data
-        let ticket = tickets.find(t => t.id === ticketId);
+        let ticket = null;
         
-        // If not found, fetch from API
-        if (!ticket) {
+        // If forceFetch is true or ticket not in local array, fetch from API
+        if (forceFetch || !tickets.find(t => t.id === ticketId)) {
+            console.log('🔄 Fetching fresh ticket data from API...');
             const response = await fetchWithAuth(`${API_BASE}/tickets`);
             const allTickets = await response.json();
             ticket = allTickets.find(t => t.id === ticketId);
+            // Update local tickets array with fresh data
+            tickets = allTickets;
+        } else {
+            ticket = tickets.find(t => t.id === ticketId);
         }
         
         if (!ticket) {
@@ -2157,29 +2164,31 @@ async function displayTicketDetailsReadOnly(ticketId) {
         
         // Update the details content with read-only view
         const detailsContent = document.getElementById('ticketDetailsContent');
+        console.log('🔍 Updating ticketDetailsContent element:', detailsContent);
+        console.log('🔍 Current content before update:', detailsContent.innerHTML.substring(0, 200));
         detailsContent.innerHTML = `
             <div class="ticket-sidebar-details">
                 <div class="detail-section">
                     <h3>Informazioni Ticket</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>ID:</label>
+                            <span class="field-label">ID:</span>
                             <span>#${ticket.id}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Titolo:</label>
+                            <span class="field-label">Titolo:</span>
                             <span>${escapeHtml(ticket.title)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Priorità:</label>
+                            <span class="field-label">Priorità:</span>
                             <span class="priority-badge priority-${sanitizeForAttribute(ticket.priority)}">${escapeHtml(ticket.priority)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Stato:</label>
+                            <span class="field-label">Stato:</span>
                             <span class="status-badge status-${sanitizeForAttribute(ticket.status.replace(' ', '-'))}">${escapeHtml(ticket.status)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Assegnato a:</label>
+                            <span class="field-label">Assegnato a:</span>
                             <span>${escapeHtml(ticket.assigned_to) || 'Non assegnato'}</span>
                         </div>
                     </div>
@@ -2189,11 +2198,11 @@ async function displayTicketDetailsReadOnly(ticketId) {
                     <h3>Cliente</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>Nome:</label>
+                            <span class="field-label">Nome:</span>
                             <span>${escapeHtml(ticket.customer_name)}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Email:</label>
+                            <span class="field-label">Email:</span>
                             <span><a href="mailto:${sanitizeForAttribute(ticket.customer_email)}">${escapeHtml(ticket.customer_email)}</a></span>
                         </div>
                     </div>
@@ -2208,15 +2217,15 @@ async function displayTicketDetailsReadOnly(ticketId) {
                     <h3>Classificazione</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>Software:</label>
+                            <span class="field-label">Software:</span>
                             <span>${escapeHtml(ticket.software) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Gruppo:</label>
+                            <span class="field-label">Gruppo:</span>
                             <span>${escapeHtml(ticket.group) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Tipo:</label>
+                            <span class="field-label">Tipo:</span>
                             <span>${escapeHtml(ticket.type) || 'Non specificato'}</span>
                         </div>
                     </div>
@@ -2226,19 +2235,19 @@ async function displayTicketDetailsReadOnly(ticketId) {
                     <h3>Assistenza</h3>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <label>Rapporto Danea:</label>
+                            <span class="field-label">Rapporto Danea:</span>
                             <span>${escapeHtml(ticket.rapporto_danea) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>ID Assistenza:</label>
+                            <span class="field-label">ID Assistenza:</span>
                             <span>${escapeHtml(ticket.id_assistenza) || 'Non specificato'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Password Teleassistenza:</label>
+                            <span class="field-label">Password Teleassistenza:</span>
                             <span>${escapeHtml(ticket.password_teleassistenza) || 'Non specificata'}</span>
                         </div>
                         <div class="detail-item">
-                            <label>Numero Richiesta:</label>
+                            <span class="field-label">Numero Richiesta:</span>
                             <span>${escapeHtml(ticket.numero_richiesta_teleassistenza) || 'Non specificato'}</span>
                         </div>
                     </div>
@@ -2251,6 +2260,9 @@ async function displayTicketDetailsReadOnly(ticketId) {
                 </div>
             </div>
         `;
+        
+        // Debug log to verify HTML content was updated
+        console.log('✅ ticketDetailsContent innerHTML updated successfully. Content length:', detailsContent.innerHTML.length);
         
         // Update ticket ID attribute
         detailsContent.setAttribute('data-ticket-id', ticket.id);
@@ -2565,9 +2577,9 @@ function startMessageAutoRefresh(ticketId) {
         } else {
             stopMessageAutoRefresh();
         }
-    }, 30000);
+    }, 15000);
     
-    console.log(`🔄 Auto-refresh avviato per ticket ${ticketId} (ogni 30 secondi)`);
+    console.log(`🔄 Auto-refresh avviato per ticket ${ticketId} (ogni 15 secondi)`);
 }
 
 function stopMessageAutoRefresh() {

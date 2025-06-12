@@ -686,7 +686,7 @@ table tr:hover {
     margin-bottom: 20px;
 }
 
-.form-group label {
+.form-group label, .field-label {
     display: block;
     color: var(--text-primary);
     font-weight: 600;
@@ -1755,7 +1755,7 @@ legend {
 .details-sidebar-right .sidebar-body {
     padding: 15px;
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto; /* Ripristino scrollbar per i dettagli */
 }
 
 .details-sidebar .sidebar-header {
