@@ -2,6 +2,27 @@
 let allTickets = [];
 let filteredTickets = [];
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 // Function to make authenticated requests
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('user_token');
@@ -65,18 +86,18 @@ function displayTicketsTable() {
     tbody.innerHTML = filteredTickets.map(ticket => `
         <tr class="ticket-row" onclick="openTicketDetails(${ticket.id})" style="cursor: pointer;">
             <td>#${ticket.id}</td>
-            <td>${ticket.title}</td>
+            <td>${escapeHtml(ticket.title)}</td>
             <td>
-                <div>${ticket.customer_name}</div>
-                <small style="color: #666;">${ticket.customer_email}</small>
+                <div>${escapeHtml(ticket.customer_name)}</div>
+                <small style="color: #666;">${escapeHtml(ticket.customer_email)}</small>
             </td>
             <td>
-                <span class="priority-badge priority-${ticket.priority}">${ticket.priority}</span>
+                <span class="priority-badge priority-${sanitizeForAttribute(ticket.priority)}">${escapeHtml(ticket.priority)}</span>
             </td>
             <td>
-                <span class="status-badge status-${ticket.status.replace(' ', '-')}">${ticket.status}</span>
+                <span class="status-badge status-${sanitizeForAttribute(ticket.status.replace(' ', '-'))}">${escapeHtml(ticket.status)}</span>
             </td>
-            <td>${ticket.assigned_to || 'Non assegnato'}</td>
+            <td>${escapeHtml(ticket.assigned_to) || 'Non assegnato'}</td>
             <td>${formatDate(ticket.created_at)}</td>
             <td class="ticket-actions-cell">
                 <button class="btn-small btn-info" onclick="event.stopPropagation(); openTicketDetails(${ticket.id})" title="Dettagli">
@@ -106,8 +127,8 @@ async function loadAgentsForTickets() {
             
             agents.forEach(agent => {
                 const option = document.createElement('option');
-                option.value = agent.name;
-                option.textContent = `${agent.name} (${agent.department})`;
+                option.value = sanitizeForAttribute(agent.name);
+                option.textContent = `${escapeHtml(agent.name)} (${escapeHtml(agent.department)})`;
                 select.appendChild(option);
             });
         }
@@ -135,8 +156,8 @@ async function loadTicketConfigurationOptions() {
                 softwareSelect.innerHTML = '<option value="">-- Seleziona Software --</option>';
                 softwareOptions.forEach(option => {
                     const optionElement = document.createElement('option');
-                    optionElement.value = option.value;
-                    optionElement.textContent = option.label;
+                    optionElement.value = sanitizeForAttribute(option.value);
+                    optionElement.textContent = escapeHtml(option.label);
                     softwareSelect.appendChild(optionElement);
                 });
                 console.log('✅ Software options popolate:', softwareOptions.length); // DEBUG
@@ -156,8 +177,8 @@ async function loadTicketConfigurationOptions() {
                 groupSelect.innerHTML = '<option value="">-- Seleziona Gruppo --</option>';
                 groupOptions.forEach(option => {
                     const optionElement = document.createElement('option');
-                    optionElement.value = option.value;
-                    optionElement.textContent = option.label;
+                    optionElement.value = sanitizeForAttribute(option.value);
+                    optionElement.textContent = escapeHtml(option.label);
                     groupSelect.appendChild(optionElement);
                 });
             }
@@ -172,8 +193,8 @@ async function loadTicketConfigurationOptions() {
                 typeSelect.innerHTML = '<option value="">-- Seleziona Tipo --</option>';
                 typeOptions.forEach(option => {
                     const optionElement = document.createElement('option');
-                    optionElement.value = option.value;
-                    optionElement.textContent = option.label;
+                    optionElement.value = sanitizeForAttribute(option.value);
+                    optionElement.textContent = escapeHtml(option.label);
                     typeSelect.appendChild(optionElement);
                 });
             }
@@ -216,8 +237,8 @@ function setDefaultConfigurationOptions() {
         softwareSelect.innerHTML = '<option value="">-- Seleziona Software --</option>';
         defaultSoftware.forEach(option => {
             const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.label;
+            optionElement.value = sanitizeForAttribute(option.value);
+            optionElement.textContent = escapeHtml(option.label);
             softwareSelect.appendChild(optionElement);
         });
     }
@@ -228,8 +249,8 @@ function setDefaultConfigurationOptions() {
         groupSelect.innerHTML = '<option value="">-- Seleziona Gruppo --</option>';
         defaultGroups.forEach(option => {
             const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.label;
+            optionElement.value = sanitizeForAttribute(option.value);
+            optionElement.textContent = escapeHtml(option.label);
             groupSelect.appendChild(optionElement);
         });
     }
@@ -240,8 +261,8 @@ function setDefaultConfigurationOptions() {
         typeSelect.innerHTML = '<option value="">-- Seleziona Tipo --</option>';
         defaultTypes.forEach(option => {
             const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.label;
+            optionElement.value = sanitizeForAttribute(option.value);
+            optionElement.textContent = escapeHtml(option.label);
             typeSelect.appendChild(optionElement);
         });
     }
