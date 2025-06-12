@@ -752,7 +752,8 @@ legend {
     backdrop-filter: blur(10px);
     z-index: 2000;
     
-    animation: modalFadeIn var(--transition-smooth);
+    /* Animazione rimossa per evitare sfarfallio */
+    opacity: 1;
 }
 
 @keyframes modalFadeIn {
@@ -775,7 +776,9 @@ legend {
         0 20px 60px rgba(0, 0, 0, 0.5),
         0 0 50px rgba(0, 255, 255, 0.2);
     
-    animation: modalSlideIn var(--transition-bounce);
+    /* Animazione rimossa per stabilità */
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 
 @keyframes modalSlideIn {

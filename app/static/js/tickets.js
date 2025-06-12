@@ -1,6 +1,7 @@
 // Tickets page specific functionality
 let allTickets = [];
 let filteredTickets = [];
+let configurationsLoaded = false;
 
 // ===== SECURITY FUNCTIONS =====
 function escapeHtml(text) {
@@ -369,51 +370,50 @@ async function openEditTicketModal(ticketId) {
     
     console.log('📄 Dati ticket:', ticket); // DEBUG
     
-    // PRIMA carica le configurazioni, POI popola i campi
-    console.log('🔄 Caricamento configurazioni prima di popolare i campi...'); // DEBUG
+    // Mostra immediatamente la modale con valori di base per evitare sfarfallio
+    const modal = document.getElementById('editTicketModal');
     
-    try {
-        // Load configuration options FIRST
-        await loadTicketConfigurationOptions();
-        await loadAgentsForTickets();
+    // Popola i campi base prima di mostrare la modale
+    document.getElementById('editTicketId').value = ticket.id;
+    document.getElementById('editTicketTitle').value = ticket.title || '';
+    document.getElementById('editTicketDescription').value = ticket.description || '';
+    document.getElementById('editCustomerName').value = ticket.customer_name || '';
+    document.getElementById('editCustomerEmail').value = ticket.customer_email || '';
+    document.getElementById('editTicketStatus').value = ticket.status || 'Open';
+    document.getElementById('editTicketPriority').value = ticket.priority || 'Medium';
+    document.getElementById('editAssignedToAgent').value = ticket.assigned_to || '';
+    
+    // Popola i campi base dei nuovi field anche se non ci sono ancora le opzioni
+    document.getElementById('editRapportoDanea').value = ticket.rapporto_danea || '';
+    document.getElementById('editIdAssistenza').value = ticket.id_assistenza || '';
+    document.getElementById('editPasswordTeleassistenza').value = ticket.password_teleassistenza || '';
+    document.getElementById('editNumeroRichiestaTeleassistenza').value = ticket.numero_richiesta_teleassistenza || '';
+    
+    // Mostra la modale immediatamente con i valori di base
+    modal.style.display = 'block';
+    
+    // Carica le configurazioni solo se non sono già state pre-caricate
+    if (!configurationsLoaded) {
+        console.log('🔄 Caricamento configurazioni mancanti...'); // DEBUG
         
-        console.log('✅ Configurazioni caricate, popolamento campi...'); // DEBUG
-        
-        // THEN populate all fields with current values
-        document.getElementById('editTicketId').value = ticket.id;
-        document.getElementById('editTicketTitle').value = ticket.title || '';
-        document.getElementById('editTicketDescription').value = ticket.description || '';
-        document.getElementById('editCustomerName').value = ticket.customer_name || '';
-        document.getElementById('editCustomerEmail').value = ticket.customer_email || '';
-        document.getElementById('editTicketStatus').value = ticket.status || 'Open';
-        document.getElementById('editTicketPriority').value = ticket.priority || 'Medium';
-        document.getElementById('editAssignedToAgent').value = ticket.assigned_to || '';
-        
-        // New fields - POPOLATI DOPO IL CARICAMENTO DELLE OPZIONI
+        try {
+            await Promise.all([
+                loadTicketConfigurationOptions(),
+                loadAgentsForTickets()
+            ]);
+            configurationsLoaded = true;
+        } catch (error) {
+            console.error('❌ Errore nel caricamento configurazioni:', error);
+        }
+    }
+    
+    // Aggiorna i campi select con le opzioni caricate
+    setTimeout(() => {
         document.getElementById('editTicketSoftware').value = ticket.software || '';
         document.getElementById('editTicketGroup').value = ticket.group || '';
         document.getElementById('editTicketType').value = ticket.type || '';
-        document.getElementById('editRapportoDanea').value = ticket.rapporto_danea || '';
-        document.getElementById('editIdAssistenza').value = ticket.id_assistenza || '';
-        document.getElementById('editPasswordTeleassistenza').value = ticket.password_teleassistenza || '';
-        document.getElementById('editNumeroRichiestaTeleassistenza').value = ticket.numero_richiesta_teleassistenza || '';
-        
-        console.log('✅ Tutti i campi popolati correttamente'); // DEBUG
-        console.log('🔍 Valori impostati:', {
-            software: ticket.software,
-            group: ticket.group,
-            type: ticket.type,
-            rapporto_danea: ticket.rapporto_danea
-        }); // DEBUG
-        
-        console.log('✅ Modal pronto per essere mostrato'); // DEBUG
-        document.getElementById('editTicketModal').style.display = 'block';
-        
-    } catch (error) {
-        console.error('❌ Errore nel caricamento configurazioni:', error);
-        // Anche se il caricamento fallisce, mostra il modal con i valori di base
-        document.getElementById('editTicketModal').style.display = 'block';
-    }
+        console.log('✅ Campi select aggiornati'); // DEBUG
+    }, 50); // Piccolo delay per assicurarsi che le opzioni siano renderizzate
 }
 
 // Handle edit ticket form submission

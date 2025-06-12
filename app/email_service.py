@@ -884,7 +884,8 @@ Il Team di Supporto"""
             <div class="ticket-info">
                 <strong>Ticket #{ticket['id']}:</strong> {ticket['title']}<br>
                 <strong>Stato:</strong> <span class="status-badge">{ticket['status']}</span><br>
-                <strong>Priorità:</strong> {ticket['priority']}
+                <strong>Priorità:</strong> {ticket['priority']}<br>
+                <strong>Agente:</strong> {message['sender_name']}
             </div>
             
             <div class="message-box">
@@ -906,46 +907,6 @@ Il Team di Supporto"""
     </div>
 </body>
 </html>
-                    
-                    <!-- Ticket Details -->
-                    <tr>
-                        <td style="background-color: #fafafa; padding: 30px 40px;">
-                            <h3 style="color: #333; margin: 0 0 15px 0; font-size: 16px;">📋 Dettagli Ticket</h3>
-                            <table width="100%" cellpadding="8" cellspacing="0">
-                                <tr>
-                                    <td style="color: #666; font-size: 14px; width: 30%;"><strong>ID Ticket:</strong></td>
-                                    <td style="color: #333; font-size: 14px;">#{ticket['id']}</td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #666; font-size: 14px;"><strong>Priorità:</strong></td>
-                                    <td style="color: #333; font-size: 14px;">
-                                        <span style="color: #{'#f44336' if ticket['priority'] == 'Urgent' else '#ff9800' if ticket['priority'] == 'High' else '#4caf50'};">
-                                            {ticket['priority']}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="color: #666; font-size: 14px;"><strong>Agente Assegnato:</strong></td>
-                                    <td style="color: #333; font-size: 14px;">{message['sender_name']}</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px 40px; text-align: center;">
-                            <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 14px;">
-                                Grazie per aver scelto il nostro servizio di supporto
-                            </p>
-                            <p style="color: rgba(255,255,255,0.7); margin: 10px 0 0 0; font-size: 12px;">
-                                CRM Pro - Sistema di Gestione Clienti | Non rispondere a questo indirizzo
-                            </p>
-                        </td>
-                    </tr>
-                    
-                </table>
-            </td>
 """
             
             # Template testo fallback per client che non supportano HTML
