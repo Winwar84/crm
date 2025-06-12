@@ -1180,6 +1180,14 @@ async function handleEditTicketSubmission(e) {
             showNotification('Ticket aggiornato con successo!', 'success');
             closeModal('editTicketModal');
             
+            // Update details panel if ticket details modal is open
+            if (currentTicketId && document.getElementById('ticketDetailsModal').style.display !== 'none') {
+                console.log('🔄 Aggiornamento pannello dettagli dopo modifica...');
+                setTimeout(() => {
+                    loadTicketDetails(currentTicketId);
+                }, 500); // Small delay to ensure ticket is updated
+            }
+            
             // Reload data
             loadStats();
             loadRecentTickets();
