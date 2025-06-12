@@ -631,6 +631,8 @@ body::before {
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
+    min-height: 1.2em; /* Prevent layout shift during loading */
+    transition: opacity 0.2s ease-in-out; /* Smooth opacity transitions */
     
     background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
     -webkit-background-clip: text;

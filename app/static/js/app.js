@@ -568,30 +568,38 @@ function glitchClock() {
     }, 100);
 }
 
-// ===== ENHANCED STATS ANIMATIONS =====
-function animateStatCounter(elementId, targetValue, duration = 2000) {
+// ===== ENHANCED STATS ANIMATIONS (ANTI-FLICKER) =====
+function animateStatCounter(elementId, targetValue, duration = 800, skipAnimation = false) {
     const element = document.getElementById(elementId);
     if (!element) return;
     
-    const startValue = 0;
-    const increment = targetValue / (duration / 16); // 60fps
-    let currentValue = startValue;
+    // Skip animation if requested or if values are very close
+    const currentValue = parseInt(element.textContent) || 0;
+    if (skipAnimation || Math.abs(currentValue - targetValue) <= 1) {
+        element.textContent = targetValue;
+        return;
+    }
     
-    const timer = setInterval(() => {
-        currentValue += increment;
-        if (currentValue >= targetValue) {
-            currentValue = targetValue;
-            clearInterval(timer);
+    // Use easing for smoother animation
+    const startValue = currentValue;
+    const startTime = performance.now();
+    
+    function animate() {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(startValue + (targetValue - startValue) * easeOut);
+        
+        element.textContent = current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
         }
-        
-        element.textContent = Math.floor(currentValue);
-        
-        // Add glow effect when updating
-        element.style.textShadow = '0 0 20px currentColor';
-        setTimeout(() => {
-            element.style.textShadow = '';
-        }, 100);
-    }, 16);
+    }
+    
+    requestAnimationFrame(animate);
 }
 
 // Override loadStats to use animated counters
@@ -600,17 +608,20 @@ if (originalLoadStats) {
     window.loadStats = function() {
         originalLoadStats().then(() => {
             // Animate counters after loading
-            setTimeout(() => {
-                const openTickets = parseInt(document.getElementById('open-tickets')?.textContent || '0');
-                const inProgressTickets = parseInt(document.getElementById('in-progress-tickets')?.textContent || '0');
-                const closedTickets = parseInt(document.getElementById('closed-tickets')?.textContent || '0');
-                const totalTickets = parseInt(document.getElementById('total-tickets')?.textContent || '0');
-                
-                animateStatCounter('open-tickets', openTickets);
-                animateStatCounter('in-progress-tickets', inProgressTickets);
-                animateStatCounter('closed-tickets', closedTickets);
-                animateStatCounter('total-tickets', totalTickets);
-            }, 500);
+            // DISABLED: Skip counter animations to prevent flickering during page transitions
+            // Only animate on first load, not on subsequent updates
+            if (document.getElementById('open-tickets')?.textContent === '0') {
+                setTimeout(() => {
+                    const openTickets = parseInt(document.getElementById('open-tickets')?.textContent || '0');
+                    const closedTickets = parseInt(document.getElementById('closed-tickets')?.textContent || '0');
+                    const totalTickets = parseInt(document.getElementById('total-tickets')?.textContent || '0');
+                    
+                    // Fast, subtle animations only on first load
+                    animateStatCounter('open-tickets', openTickets, 300);
+                    animateStatCounter('closed-tickets', closedTickets, 300);
+                    animateStatCounter('total-tickets', totalTickets, 300);
+                }, 100);
+            }
         });
     };
 }
@@ -737,24 +748,72 @@ function updateUserDisplay() {
     }
 }
 
+// Debouncing for loadStats to prevent multiple rapid calls
+let statsLoadingPromise = null;
+
 // Load dashboard statistics
 async function loadStats() {
+    // If already loading, return the existing promise
+    if (statsLoadingPromise) {
+        return statsLoadingPromise;
+    }
+    
+    statsLoadingPromise = loadStatsInternal();
+    
     try {
+        await statsLoadingPromise;
+    } finally {
+        statsLoadingPromise = null;
+    }
+}
+
+async function loadStatsInternal() {
+    try {
+        // Set loading state immediately to prevent flickering
+        const elements = {
+            openTickets: document.getElementById('open-tickets'),
+            closedTickets: document.getElementById('closed-tickets'), 
+            totalTickets: document.getElementById('total-tickets'),
+            totalAgents: document.getElementById('total-agents')
+        };
+        
+        // Set subtle loading state without changing text to prevent flicker
+        Object.values(elements).forEach(el => {
+            if (el) {
+                el.style.opacity = '0.7';
+                el.style.transition = 'opacity 0.2s ease';
+            }
+        });
+        
         const response = await fetchWithAuth(`${API_BASE}/stats`);
         const stats = await response.json();
         
-        // Only update elements if they exist (dashboard page)
-        const openTickets = document.getElementById('open-tickets');
-        const closedTickets = document.getElementById('closed-tickets');
-        const totalTickets = document.getElementById('total-tickets');
-        const totalAgents = document.getElementById('total-agents');
+        // Batch update all elements at once to prevent flickering
+        const updates = [];
+        if (elements.openTickets) updates.push(() => elements.openTickets.textContent = stats.open_tickets);
+        if (elements.closedTickets) updates.push(() => elements.closedTickets.textContent = stats.closed_tickets);
+        if (elements.totalTickets) updates.push(() => elements.totalTickets.textContent = stats.total_tickets);
+        if (elements.totalAgents) updates.push(() => elements.totalAgents.textContent = stats.total_agents);
         
-        if (openTickets) openTickets.textContent = stats.open_tickets;
-        if (closedTickets) closedTickets.textContent = stats.closed_tickets;
-        if (totalTickets) totalTickets.textContent = stats.total_tickets;
-        if (totalAgents) totalAgents.textContent = stats.total_agents;
+        // Execute all updates in a single frame
+        requestAnimationFrame(() => {
+            updates.forEach(update => update());
+            // Reset opacity
+            Object.values(elements).forEach(el => {
+                if (el) el.style.opacity = '1';
+            });
+        });
+        
     } catch (error) {
         console.error('Errore nel caricamento delle statistiche:', error);
+        // Reset opacity on error
+        ['open-tickets', 'closed-tickets', 'total-tickets', 'total-agents'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.opacity = '1';
+                el.textContent = '0';
+            }
+        });
     }
 }
 
