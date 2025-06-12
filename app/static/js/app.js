@@ -40,16 +40,19 @@ let authorizedLogout = false;
 let sessionProtected = true;
 let logoutAttempts = 0;
 let maxLogoutAttempts = 3;
+let hasUnsavedChanges = false;
+let isFormDirty = false;
 
 // Prevent accidental page closure/refresh
 function initLogoutProtection() {
-    // Prevent accidental tab closing
+    // Prevent accidental tab closing ONLY when there are unsaved changes
     window.addEventListener('beforeunload', function(e) {
-        if (sessionProtected && !authorizedLogout) {
+        if (sessionProtected && !authorizedLogout && (hasUnsavedChanges || isFormDirty)) {
             e.preventDefault();
-            e.returnValue = 'Sei sicuro di voler uscire? Potresti perdere il lavoro non salvato.';
+            e.returnValue = 'Hai modifiche non salvate. Sei sicuro di voler uscire?';
             return e.returnValue;
         }
+        // No warning for simple navigation when no unsaved changes
     });
     
     // Prevent browser back/forward navigation logout
@@ -139,7 +142,79 @@ function initLogoutProtection() {
         }
     }, 300000); // Every 5 minutes
     
+    // Track form changes for unsaved work detection
+    initFormChangeTracking();
+    
     console.log('🛡️ Logout Protection System activated');
+}
+
+// Track form changes to detect unsaved work
+function initFormChangeTracking() {
+    // Track when forms become dirty
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input, textarea, select')) {
+            const form = e.target.closest('form');
+            const input = e.target;
+            
+            // Skip search inputs, filters, and other non-critical forms
+            if (input.id && (
+                input.id.includes('search') || 
+                input.id.includes('Filter') ||
+                input.id.includes('filter') ||
+                input.type === 'search'
+            )) {
+                return;
+            }
+            
+            // Skip forms with search-related classes
+            if (form && (
+                form.classList.contains('search-form') ||
+                form.classList.contains('filter-form') ||
+                form.id.includes('search') ||
+                form.id.includes('filter')
+            )) {
+                return;
+            }
+            
+            // Only mark dirty for actual data entry forms
+            if (form && (
+                form.id.includes('Form') || 
+                form.id.includes('ticket') ||
+                form.id.includes('customer') ||
+                form.id.includes('agent')
+            )) {
+                markFormDirty();
+            }
+        }
+    });
+    
+    // Clear dirty state when modal closes (assuming successful save)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('close') || e.target.classList.contains('modal')) {
+            // Small delay to allow save operations to complete
+            setTimeout(clearFormDirty, 500);
+        }
+    });
+}
+
+// Mark form as having unsaved changes
+function markFormDirty() {
+    isFormDirty = true;
+    hasUnsavedChanges = true;
+    console.log('📝 Form marked as dirty - unsaved changes detected');
+}
+
+// Clear unsaved changes state
+function clearFormDirty() {
+    isFormDirty = false;
+    hasUnsavedChanges = false;
+    console.log('✅ Form state cleared - changes saved');
+}
+
+// Manual functions for specific operations
+function setUnsavedChanges(state) {
+    hasUnsavedChanges = state;
+    if (!state) isFormDirty = false;
 }
 
 // Show logout confirmation modal
@@ -261,6 +336,9 @@ function confirmLogout() {
 
 // Secure logout function
 function performSecureLogout() {
+    // Clear form dirty state (logout is intentional)
+    clearFormDirty();
+    
     // Clear all session data
     localStorage.removeItem('user_token');
     localStorage.removeItem('current_user');
