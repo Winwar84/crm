@@ -240,6 +240,42 @@ class EmailService:
             return False, f"Errore nell'invio email: {str(e)}"
     
     @staticmethod
+    def send_html_email(to_email, subject, html_body, config=None):
+        """Invia un email HTML utilizzando la configurazione SMTP"""
+        if not config:
+            config = EmailService.get_smtp_config()
+        
+        if not config:
+            return False, "Configurazione SMTP non trovata"
+        
+        try:
+            # Crea il messaggio multipart
+            msg = MIMEMultipart('alternative')
+            msg['From'] = f"{config.get('from_name', 'CRM Pro')} <{config['from_email']}>"
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            
+            # Crea versione HTML
+            html_part = MIMEText(html_body, 'html', 'utf-8')
+            msg.attach(html_part)
+            
+            # Connessione al server SMTP
+            if config['security'] == 'SSL':
+                server = smtplib.SMTP_SSL(config['host'], int(config['port']))
+            else:
+                server = smtplib.SMTP(config['host'], int(config['port']))
+                if config['security'] == 'TLS':
+                    server.starttls()
+            
+            server.login(config['username'], config['password'])
+            server.send_message(msg)
+            server.quit()
+            
+            return True, "Email HTML inviata con successo"
+        except Exception as e:
+            return False, f"Errore nell'invio email HTML: {str(e)}"
+    
+    @staticmethod
     def get_email_template(template_type):
         """Recupera un template email"""
         try:
@@ -354,26 +390,95 @@ Il Team di Supporto"""
     
     @staticmethod
     def send_ticket_resolved_notification(ticket_data):
-        """Invia notifica specifica quando ticket è risolto"""
-        template = EmailService.get_email_template('resolved_ticket')
-        if not template:
-            # Template cyberpunk uniformato per risoluzione
-            subject = "🎯 Ticket #{ticket_id} - RISOLTO"
-            body = """
+        """Invia notifica specifica quando ticket è risolto con tutta la conversazione"""
+        try:
+            # Recupera tutti i messaggi del ticket
+            from task_helper import get_from_supabase
+            
+            messages = get_from_supabase('ticket_messages', 
+                                       filters={'ticket_id': ticket_data.get('id')},
+                                       select='*',
+                                       order_by={'created_at': 'desc'})  # Più recenti in alto
+            
+            print(f"📧 Recuperati {len(messages) if messages else 0} messaggi per ticket #{ticket_data.get('id')}")
+            
+            # Prepara HTML messaggi in ordine cronologico inverso (più recente in alto)
+            messages_html = ""
+            if messages:
+                for i, msg in enumerate(messages):
+                    # Salta messaggi interni (solo agenti)
+                    if msg.get('is_internal', False):
+                        continue
+                    
+                    # Determina stile in base al tipo mittente
+                    if msg.get('sender_type') == 'agent':
+                        msg_class = "agent-message"
+                        sender_icon = "🛠️"
+                        sender_label = "Supporto Tecnico"
+                    else:
+                        msg_class = "customer-message"  
+                        sender_icon = "👤"
+                        sender_label = "Cliente"
+                    
+                    # Formatta data
+                    created_at = msg.get('created_at', '')
+                    if created_at:
+                        from datetime import datetime
+                        try:
+                            dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                            formatted_date = dt.strftime('%d/%m/%Y alle %H:%M')
+                        except:
+                            formatted_date = created_at
+                    else:
+                        formatted_date = 'Data non disponibile'
+                    
+                    # Badge per ultimo messaggio
+                    is_latest = i == 0
+                    latest_badge = '<span class="latest-badge">💫 ULTIMO</span>' if is_latest else ''
+                    
+                    messages_html += f"""
+                    <div class="message-item {msg_class}">
+                        <div class="message-header">
+                            <span class="sender-info">
+                                {sender_icon} <strong>{sender_label}</strong> - {msg.get('sender_name', 'N/A')}
+                            </span>
+                            <span class="message-date">{formatted_date}</span>
+                            {latest_badge}
+                        </div>
+                        <div class="message-content">
+                            {msg.get('message_text', '').replace(chr(10), '<br>')}
+                        </div>
+                    </div>
+                    """
+            
+            # Template stile apertura ticket ma per risoluzione
+            subject = f"🎯 Ticket #{ticket_data.get('id')} - RISOLTO - Riepilogo Conversazione"
+            
+            body = f"""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <style>
         body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
-        .header {{ background: linear-gradient(135deg, #00ffff 0%, #0066cc 100%); color: white; padding: 30px 25px; text-align: center; }}
+        .container {{ max-width: 700px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%); color: white; padding: 30px 25px; text-align: center; }}
         .header h1 {{ margin: 0; font-size: 24px; font-weight: 600; }}
         .content {{ padding: 30px 25px; line-height: 1.6; color: #333; }}
-        .ticket-info {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffff; }}
+        .ticket-info {{ background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ff41; }}
         .status-resolved {{ color: #00ff41; font-weight: bold; font-size: 18px; }}
+        .conversation-section {{ margin: 30px 0; }}
+        .conversation-title {{ color: #333; font-size: 18px; font-weight: 600; margin-bottom: 20px; border-bottom: 2px solid #00ff41; padding-bottom: 10px; }}
+        .message-item {{ margin: 20px 0; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; }}
+        .agent-message {{ background: #f0f8ff; border-left: 4px solid #0066cc; }}
+        .customer-message {{ background: #fff8f0; border-left: 4px solid #ff6b35; }}
+        .message-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
+        .sender-info {{ font-weight: 600; color: #333; }}
+        .message-date {{ font-size: 12px; color: #666; }}
+        .latest-badge {{ background: #ff6b35; color: white; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }}
+        .message-content {{ color: #444; line-height: 1.5; }}
         .footer {{ background: #f8f9fa; padding: 20px 25px; text-align: center; color: #666; font-size: 14px; }}
-        .btn {{ display: inline-block; background: #00ffff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; font-weight: 500; }}
+        .reopen-info {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0; }}
     </style>
 </head>
 <body>
@@ -382,60 +487,53 @@ Il Team di Supporto"""
             <h1>🎯 TICKET RISOLTO</h1>
         </div>
         <div class="content">
-            <p>Gentile <strong>{customer_name}</strong>,</p>
+            <p>Gentile <strong>{ticket_data.get('customer_name', '')}</strong>,</p>
             
             <p>Siamo lieti di informarla che il suo ticket è stato <span class="status-resolved">RISOLTO</span> con successo!</p>
             
             <div class="ticket-info">
-                <strong>Ticket #{ticket_id}:</strong> {ticket_title}<br>
+                <strong>Ticket #{ticket_data.get('id', '')}:</strong> {ticket_data.get('title', '')}<br>
                 <strong>Stato:</strong> <span class="status-resolved">✅ RISOLTO</span><br>
-                <strong>Priorità:</strong> {priority}
+                <strong>Priorità:</strong> {ticket_data.get('priority', 'Media')}<br>
+                <strong>Descrizione:</strong> {ticket_data.get('description', '')[:200]}{'...' if len(ticket_data.get('description', '')) > 200 else ''}
             </div>
             
-            <p>La problematica è stata gestita dal nostro team tecnico e dovrebbe ora essere completamente risolta.</p>
+            <div class="conversation-section">
+                <div class="conversation-title">
+                    💬 Riepilogo Completo Conversazione
+                </div>
+                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                    Di seguito trova la cronologia completa degli scambi, con l'ultimo messaggio in evidenza:
+                </p>
+                
+                {messages_html if messages_html else '<div class="message-item"><em>Nessun messaggio nella conversazione</em></div>'}
+            </div>
             
-            <p><strong>🔄 Cosa succede ora?</strong></p>
-            <ul>
-                <li>Il ticket è stato marcato come risolto</li>
-                <li>Se ha ancora problemi, può rispondere a questa email</li>
-                <li>La sua risposta riaprirà automaticamente il ticket</li>
-                <li>Il nostro team sarà immediatamente notificato</li>
-            </ul>
+            <div class="reopen-info">
+                <strong>🔄 Serve ancora supporto?</strong><br>
+                Se ha ancora problemi o domande, <strong>risponda direttamente a questa email</strong>.<br>
+                Il ticket sarà riaperto automaticamente e il nostro team riceverà immediatamente la notifica.
+            </div>
             
             <p style="margin-top: 25px;">
-                <strong>📧 Serve altro supporto?</strong><br>
-                Risponda direttamente a questa email e il ticket sarà riaperto automaticamente.
+                Grazie per aver utilizzato il nostro servizio di supporto!
             </p>
         </div>
         <div class="footer">
             <p>🤖 <strong>CRM Pro v2.7 - Cyberpunk Command Center</strong></p>
-            <p>Questo è un messaggio automatico del sistema di supporto</p>
+            <p>Ticket risolto automaticamente • Sistema di supporto clienti</p>
         </div>
     </div>
 </body>
 </html>
 """
-        else:
-            subject = template['subject']
-            body = template['body']
-        
-        # Sostituisci i placeholder
-        subject = subject.format(
-            ticket_id=ticket_data.get('id', ''),
-            ticket_title=ticket_data.get('title', ''),
-            customer_name=ticket_data.get('customer_name', '')
-        )
-        
-        body = body.format(
-            ticket_id=ticket_data.get('id', ''),
-            ticket_title=ticket_data.get('title', ''),
-            customer_name=ticket_data.get('customer_name', ''),
-            priority=ticket_data.get('priority', 'Media'),
-            ticket_status=ticket_data.get('status', '')
-        )
-        
-        print(f"📧 Invio email risoluzione ticket #{ticket_data.get('id')} a {ticket_data.get('customer_email')}")
-        return EmailService.send_email(ticket_data['customer_email'], subject, body)
+            
+            print(f"📧 Invio email risoluzione con conversazione completa per ticket #{ticket_data.get('id')} a {ticket_data.get('customer_email')}")
+            return EmailService.send_html_email(ticket_data['customer_email'], subject, body)
+            
+        except Exception as e:
+            print(f"❌ Errore nell'invio email risoluzione: {e}")
+            return False
     
     @staticmethod
     def clean_reply_message(body):
