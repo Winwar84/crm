@@ -462,7 +462,14 @@ async function handleEditTicketSubmission(e) {
         
         if (response.ok) {
             showNotification('Ticket aggiornato con successo!', 'success');
-            closeModal('editTicketModal');
+            
+            // Force close modal with !important override
+            const editModal = document.getElementById('editTicketModal');
+            if (editModal) {
+                editModal.style.setProperty('display', 'none', 'important');
+                console.log('✅ Modal editTicketModal chiuso forzatamente');
+            }
+            
             loadAllTickets();
             
             // Update details panel if ticket details modal is open

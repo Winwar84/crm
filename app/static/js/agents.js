@@ -432,19 +432,19 @@ function viewAgentDetails(agentId) {
                 <h3>Informazioni Agente</h3>
                 <div class="detail-grid">
                     <div class="detail-item">
-                        <label>Nome:</label>
+                        <span class="field-label">Nome:</span>
                         <span>${escapeHtml(agent.name)}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Email:</label>
+                        <span class="field-label">Email:</span>
                         <span><a href="mailto:${sanitizeForAttribute(agent.email)}">${escapeHtml(agent.email)}</a></span>
                     </div>
                     <div class="detail-item">
-                        <label>Dipartimento:</label>
+                        <span class="field-label">Dipartimento:</span>
                         <span class="department-badge department-${sanitizeForAttribute(agent.department)}">${escapeHtml(agent.department)}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Ticket Assegnati:</label>
+                        <span class="field-label">Ticket Assegnati:</span>
                         <span>${assignedTickets}</span>
                     </div>
                 </div>
@@ -454,7 +454,7 @@ function viewAgentDetails(agentId) {
                 <h3>Informazioni Sistema</h3>
                 <div class="detail-grid">
                     <div class="detail-item">
-                        <label>Registrato:</label>
+                        <span class="field-label">Registrato:</span>
                         <span>${formatDate(agent.created_at)}</span>
                     </div>
                 </div>

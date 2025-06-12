@@ -114,7 +114,10 @@ function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     
+    console.log(`🎨 Theme toggle: ${currentTheme} → ${newTheme}`);
+    
     setTheme(newTheme);
+    updateThemeToggleButton(newTheme);
     
     // Show notification about theme change
     showNotification(`Switched to ${newTheme} theme`, 'info');
@@ -1873,11 +1876,11 @@ async function makeTicketDetailsEditable(ticketId) {
                         <h3>Informazioni Cliente</h3>
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <label>Nome:</label>
+                                <label for="editableCustomerName">Nome:</label>
                                 <input type="text" id="editableCustomerName" value="${ticket.customer_name}" class="inline-edit-input">
                             </div>
                             <div class="detail-item">
-                                <label>Email:</label>
+                                <label for="editableCustomerEmail">Email:</label>
                                 <input type="email" id="editableCustomerEmail" value="${ticket.customer_email}" class="inline-edit-input">
                             </div>
                         </div>
@@ -1892,7 +1895,7 @@ async function makeTicketDetailsEditable(ticketId) {
                         <h3>Dettagli Ticket</h3>
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <label>Assegnato a:</label>
+                                <label for="editableAssignedToAgent">Assegnato a:</label>
                                 <select id="editableAssignedToAgent" class="inline-select">
                                     <option value="">-- Non assegnato --</option>
                                     ${agents.map(agent => 
@@ -1901,7 +1904,7 @@ async function makeTicketDetailsEditable(ticketId) {
                                 </select>
                             </div>
                             <div class="detail-item">
-                                <label>Software:</label>
+                                <label for="editableSoftware">Software:</label>
                                 <select id="editableSoftware" class="inline-select">
                                     <option value="">-- Seleziona Software --</option>
                                     ${softwareOptions.map(option => 
@@ -1910,7 +1913,7 @@ async function makeTicketDetailsEditable(ticketId) {
                                 </select>
                             </div>
                             <div class="detail-item">
-                                <label>Gruppo:</label>
+                                <label for="editableGroup">Gruppo:</label>
                                 <select id="editableGroup" class="inline-select">
                                     <option value="">-- Seleziona Gruppo --</option>
                                     ${groupOptions.map(option => 
@@ -1919,7 +1922,7 @@ async function makeTicketDetailsEditable(ticketId) {
                                 </select>
                             </div>
                             <div class="detail-item">
-                                <label>Tipo:</label>
+                                <label for="editableType">Tipo:</label>
                                 <select id="editableType" class="inline-select">
                                     <option value="">-- Seleziona Tipo --</option>
                                     ${typeOptions.map(option => 
@@ -1942,19 +1945,19 @@ async function makeTicketDetailsEditable(ticketId) {
                         <h3>Informazioni Assistenza</h3>
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <label>Rapporto Danea:</label>
+                                <label for="editableRapportoDanea">Rapporto Danea:</label>
                                 <input type="text" id="editableRapportoDanea" value="${ticket.rapporto_danea || ''}" class="inline-edit-input" placeholder="Inserisci rapporto Danea">
                             </div>
                             <div class="detail-item">
-                                <label>ID Assistenza:</label>
+                                <label for="editableIdAssistenza">ID Assistenza:</label>
                                 <input type="text" id="editableIdAssistenza" value="${ticket.id_assistenza || ''}" class="inline-edit-input" placeholder="Inserisci ID assistenza">
                             </div>
                             <div class="detail-item">
-                                <label>Password Teleassistenza:</label>
+                                <label for="editablePasswordTeleassistenza">Password Teleassistenza:</label>
                                 <input type="text" id="editablePasswordTeleassistenza" value="${ticket.password_teleassistenza || ''}" class="inline-edit-input" placeholder="Inserisci password">
                             </div>
                             <div class="detail-item">
-                                <label>Numero Richiesta Teleassistenza:</label>
+                                <label for="editableNumeroRichiesta">Numero Richiesta Teleassistenza:</label>
                                 <input type="text" id="editableNumeroRichiesta" value="${ticket.numero_richiesta_teleassistenza || ''}" class="inline-edit-input" placeholder="Inserisci numero richiesta">
                             </div>
                         </div>
@@ -2166,6 +2169,17 @@ async function displayTicketDetailsReadOnly(ticketId, forceFetch = false) {
         const detailsContent = document.getElementById('ticketDetailsContent');
         console.log('🔍 Updating ticketDetailsContent element:', detailsContent);
         console.log('🔍 Current content before update:', detailsContent.innerHTML.substring(0, 200));
+        
+        // Force clear any existing content first
+        detailsContent.innerHTML = '';
+        
+        // Hide any inline edit forms that might be visible
+        const editForm = document.getElementById('editableTicketDetailsForm');
+        if (editForm) {
+            editForm.style.display = 'none';
+            console.log('🔒 Nascosto form di editing inline');
+        }
+        
         detailsContent.innerHTML = `
             <div class="ticket-sidebar-details">
                 <div class="detail-section">

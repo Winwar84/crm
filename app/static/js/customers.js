@@ -302,23 +302,23 @@ function viewCustomerDetails(customerId) {
                 <h3>Informazioni Generali</h3>
                 <div class="detail-grid">
                     <div class="detail-item">
-                        <label>Nome:</label>
+                        <span class="field-label">Nome:</span>
                         <span>${customer.name}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Email:</label>
+                        <span class="field-label">Email:</span>
                         <span><a href="mailto:${customer.email}">${customer.email}</a></span>
                     </div>
                     <div class="detail-item">
-                        <label>Telefono:</label>
+                        <span class="field-label">Telefono:</span>
                         <span>${customer.phone ? `<a href="tel:${customer.phone}">${customer.phone}</a>` : 'Non specificato'}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Azienda:</label>
+                        <span class="field-label">Azienda:</span>
                         <span>${customer.company || 'Non specificata'}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Stato:</label>
+                        <span class="field-label">Stato:</span>
                         <span class="status-badge status-${customer.status}">${customer.status}</span>
                     </div>
                 </div>
@@ -342,11 +342,11 @@ function viewCustomerDetails(customerId) {
                 <h3>Informazioni Sistema</h3>
                 <div class="detail-grid">
                     <div class="detail-item">
-                        <label>Registrato:</label>
+                        <span class="field-label">Registrato:</span>
                         <span>${formatDate(customer.created_at)}</span>
                     </div>
                     <div class="detail-item">
-                        <label>Ultimo aggiornamento:</label>
+                        <span class="field-label">Ultimo aggiornamento:</span>
                         <span>${formatDate(customer.updated_at)}</span>
                     </div>
                 </div>

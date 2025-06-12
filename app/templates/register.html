@@ -3,119 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione - CRM System</title>
+    <title>User Registration - CRM Pro v2.5</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        /* Cyberpunk Registration Theme */
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-magenta: #ff00ff;
+            --neon-purple: #9d4edd;
+            --dark-bg: #0a0a0f;
+            --dark-elevated: #1a1a2e;
+            --glass-bg: rgba(20, 20, 40, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b3b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
         .auth-container {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            position: relative;
             padding: 2rem 0;
+        }
+
+        /* Cyberpunk Background Effects */
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(157, 78, 221, 0.05) 0%, transparent 50%);
+            pointer-events: none;
         }
         
         .auth-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-magenta), var(--neon-purple));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.5;
         }
         
         .auth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
         
         .auth-header h1 {
-            color: #333;
+            color: var(--neon-cyan);
             margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
         
         .auth-header p {
-            color: #666;
+            color: var(--text-secondary);
             margin: 0;
+            font-size: 1.1rem;
         }
         
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #333;
-            font-weight: 500;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
         }
         
         .form-group input, .form-group select {
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
         }
         
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .btn-auth {
             width: 100%;
-            padding: 0.75rem;
-            background: #667eea;
-            color: white;
+            padding: 1rem;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-magenta));
+            color: var(--dark-bg);
             border: none;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .btn-auth:hover {
-            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
         }
         
         .auth-links {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
         
         .auth-links a {
-            color: #667eea;
+            color: var(--neon-magenta);
             text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .auth-links a:hover {
-            text-decoration: underline;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
         
         .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid #ff5252;
+            color: #ff8a80;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
         
         .success-message {
-            background: #efe;
-            color: #3c3;
-            padding: 0.75rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            color: #a5d6a7;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
         
         .password-requirements {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .auth-card {
+                margin: 1rem;
+                padding: 2rem;
+            }
+            
+            .auth-header h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
@@ -123,21 +217,21 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Registrazione</h1>
-                <p>Crea un nuovo account operatore</p>
+                <h1>USER REGISTRATION</h1>
+                <p>CRM Pro v2.5 - New Operator Access Request</p>
             </div>
             
             <div id="message"></div>
             
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="fullName">Nome Completo</label>
+                    <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" name="fullName" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
                 </div>
                 
                 <div class="form-group">
@@ -146,24 +240,24 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
+                    <label for="password">Security Code</label>
+                    <input type="password" id="password" name="password" autocomplete="new-password" required>
                     <div class="password-requirements">
-                        Minimo 6 caratteri
+                        Minimum 6 characters required for system access
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirmPassword">Conferma Password</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    <label for="confirmPassword">Confirm Security Code</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
                 </div>
                 
                 
-                <button type="submit" class="btn-auth">Registrati</button>
+                <button type="submit" class="btn-auth">Initialize Registration</button>
             </form>
             
             <div class="auth-links">
-                <p>Hai già un account? <a href="/login">Accedi qui</a></p>
+                <p>Already have access? <a href="/login">Connect to Terminal</a></p>
             </div>
         </div>
     </div>
@@ -179,14 +273,14 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const messageDiv = document.getElementById('message');
             
-            // Validazione password
+            // Security validation
             if (password.length < 6) {
-                messageDiv.innerHTML = '<div class="error-message">La password deve essere di almeno 6 caratteri</div>';
+                messageDiv.innerHTML = '<div class="error-message">Security Code Error: Minimum 6 characters required for system access</div>';
                 return;
             }
             
             if (password !== confirmPassword) {
-                messageDiv.innerHTML = '<div class="error-message">Le password non corrispondono</div>';
+                messageDiv.innerHTML = '<div class="error-message">Security Code Mismatch: Confirmation does not match original code</div>';
                 return;
             }
             
@@ -207,7 +301,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    messageDiv.innerHTML = '<div class="success-message">Registrazione completata! Il tuo account è in attesa di approvazione dall\'amministratore.</div>';
+                    messageDiv.innerHTML = '<div class="success-message">Registration Protocol Completed! Access request submitted for administrator approval. Redirecting to terminal...</div>';
                     
                     setTimeout(() => {
                         window.location.href = '/login';
@@ -216,7 +310,7 @@
                     messageDiv.innerHTML = `<div class="error-message">${data.error}</div>`;
                 }
             } catch (error) {
-                messageDiv.innerHTML = '<div class="error-message">Errore di connessione. Riprova più tardi.</div>';
+                messageDiv.innerHTML = '<div class="error-message">Connection Error: System temporarily unavailable. Please retry connection.</div>';
             }
         });
         
