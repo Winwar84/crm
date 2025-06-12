@@ -1181,7 +1181,8 @@ async function handleEditTicketSubmission(e) {
         
         if (response.ok) {
             showNotification('Ticket aggiornato con successo!', 'success');
-            closeModal('editTicketModal');
+            // Force close modal with important flag to override any conflicting styles
+            document.getElementById('editTicketModal').style.setProperty('display', 'none', 'important');
             
             // Update details panel if ticket details modal is open
             if (currentTicketId && document.getElementById('ticketDetailsModal').style.display !== 'none') {
@@ -2122,12 +2123,30 @@ async function handleEditableTicketSubmission(e) {
         if (response.ok) {
             showNotification('Ticket aggiornato con successo!', 'success');
             console.log('✅ Ticket salvato, switching a read-only mode...');
-            // Switch back to read-only view with fresh data
-            await displayTicketDetailsReadOnly(ticketId, true); // Force fetch fresh data
+            
+            // Update local ticket data immediately
+            const ticketIndex = tickets.findIndex(t => t.id == ticketId);
+            if (ticketIndex >= 0) {
+                tickets[ticketIndex] = { ...tickets[ticketIndex], ...formData, id: ticketId };
+                console.log('📝 Dati locali aggiornati');
+            }
+            
+            // Force hide the edit form first
+            const editForm = document.getElementById('editableTicketDetailsForm');
+            if (editForm) {
+                editForm.remove(); // Remove completely
+                console.log('🗑️ Form di editing rimosso dal DOM');
+            }
+            
+            // Switch back to read-only view with updated local data (no API fetch)
+            await displayTicketDetailsReadOnly(ticketId, false); // Use local data
             console.log('✅ Read-only mode attivato');
-            // Refresh background data
-            loadRecentTickets();
-            loadStats();
+            
+            // Refresh background data asynchronously (non-blocking)
+            setTimeout(() => {
+                loadRecentTickets();
+                loadStats();
+            }, 0);
         } else {
             throw new Error('Errore nell\'aggiornamento del ticket');
         }
@@ -2153,11 +2172,11 @@ async function displayTicketDetailsReadOnly(ticketId, forceFetch = false) {
             console.log('🔄 Fetching fresh ticket data from API...');
             const response = await fetchWithAuth(`${API_BASE}/tickets`);
             const allTickets = await response.json();
-            ticket = allTickets.find(t => t.id === ticketId);
+            ticket = allTickets.find(t => t.id == ticketId);
             // Update local tickets array with fresh data
             tickets = allTickets;
         } else {
-            ticket = tickets.find(t => t.id === ticketId);
+            ticket = tickets.find(t => t.id == ticketId);
         }
         
         if (!ticket) {
@@ -2167,18 +2186,18 @@ async function displayTicketDetailsReadOnly(ticketId, forceFetch = false) {
         
         // Update the details content with read-only view
         const detailsContent = document.getElementById('ticketDetailsContent');
-        console.log('🔍 Updating ticketDetailsContent element:', detailsContent);
-        console.log('🔍 Current content before update:', detailsContent.innerHTML.substring(0, 200));
+        
+        if (!detailsContent) {
+            console.error('❌ ticketDetailsContent element not found!');
+            return;
+        }
         
         // Force clear any existing content first
         detailsContent.innerHTML = '';
         
-        // Hide any inline edit forms that might be visible
-        const editForm = document.getElementById('editableTicketDetailsForm');
-        if (editForm) {
-            editForm.style.display = 'none';
-            console.log('🔒 Nascosto form di editing inline');
-        }
+        // Remove any remaining edit forms from the entire modal
+        const allEditForms = document.querySelectorAll('#editableTicketDetailsForm');
+        allEditForms.forEach(form => form.remove());
         
         detailsContent.innerHTML = `
             <div class="ticket-sidebar-details">
@@ -2274,9 +2293,6 @@ async function displayTicketDetailsReadOnly(ticketId, forceFetch = false) {
                 </div>
             </div>
         `;
-        
-        // Debug log to verify HTML content was updated
-        console.log('✅ ticketDetailsContent innerHTML updated successfully. Content length:', detailsContent.innerHTML.length);
         
         // Update ticket ID attribute
         detailsContent.setAttribute('data-ticket-id', ticket.id);

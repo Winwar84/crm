@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cyberpunk" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ff00ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8000ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="32" height="32" fill="#0a0a0f" rx="6"/>
+  
+  <!-- CRM Letters -->
+  <text x="16" y="22" text-anchor="middle" fill="url(#cyberpunk)" font-family="Arial, sans-serif" font-size="14" font-weight="bold">CRM</text>
+  
+  <!-- Cyber border -->
+  <rect width="30" height="30" x="1" y="1" fill="none" stroke="url(#cyberpunk)" stroke-width="1" rx="5"/>
+  
+  <!-- Neon glow effect -->
+  <rect width="28" height="28" x="2" y="2" fill="none" stroke="#00ffff" stroke-width="0.5" rx="4" opacity="0.6"/>
+</svg>
