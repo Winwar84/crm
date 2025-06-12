@@ -34,6 +34,255 @@ function sanitizeForAttribute(text) {
     });
 }
 
+// ===== LOGOUT PROTECTION SYSTEM =====
+let logoutProtectionEnabled = true;
+let authorizedLogout = false;
+let sessionProtected = true;
+let logoutAttempts = 0;
+let maxLogoutAttempts = 3;
+
+// Prevent accidental page closure/refresh
+function initLogoutProtection() {
+    // Prevent accidental tab closing
+    window.addEventListener('beforeunload', function(e) {
+        if (sessionProtected && !authorizedLogout) {
+            e.preventDefault();
+            e.returnValue = 'Sei sicuro di voler uscire? Potresti perdere il lavoro non salvato.';
+            return e.returnValue;
+        }
+    });
+    
+    // Prevent browser back/forward navigation logout
+    window.addEventListener('popstate', function(e) {
+        if (sessionProtected) {
+            e.preventDefault();
+            history.pushState(null, null, window.location.pathname);
+            showNotification('Usa il pulsante logout per uscire dal sistema', 'warning');
+        }
+    });
+    
+    // Override any programmatic navigation that might logout
+    const originalAssign = window.location.assign;
+    const originalReplace = window.location.replace;
+    const originalReload = window.location.reload;
+    
+    window.location.assign = function(url) {
+        if (sessionProtected && !authorizedLogout && (url.includes('/login') || url === '/')) {
+            showLogoutConfirmation();
+            return;
+        }
+        originalAssign.call(this, url);
+    };
+    
+    window.location.replace = function(url) {
+        if (sessionProtected && !authorizedLogout && (url.includes('/login') || url === '/')) {
+            showLogoutConfirmation();
+            return;
+        }
+        originalReplace.call(this, url);
+    };
+    
+    window.location.reload = function() {
+        if (sessionProtected && !authorizedLogout) {
+            showLogoutConfirmation();
+            return;
+        }
+        originalReload.call(this);
+    };
+    
+    // Prevent localStorage token removal except through authorized logout
+    const originalRemoveItem = localStorage.removeItem;
+    localStorage.removeItem = function(key) {
+        if ((key === 'user_token' || key === 'current_user') && sessionProtected && !authorizedLogout) {
+            logoutAttempts++;
+            console.warn(`🚫 Tentativo di logout non autorizzato bloccato (${logoutAttempts}/${maxLogoutAttempts})`);
+            
+            if (logoutAttempts >= maxLogoutAttempts) {
+                showNotification('⚠️ Troppi tentativi di logout non autorizzati! Sessione protetta.', 'error');
+                // Extra security: increase protection level
+                sessionProtected = true;
+                logoutAttempts = 0;
+            } else {
+                showNotification('Logout non autorizzato! Usa il pulsante logout.', 'error');
+            }
+            return;
+        }
+        originalRemoveItem.call(this, key);
+    };
+    
+    // Protect against console manipulation
+    const originalConsoleLog = console.log;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+    
+    // Monitor suspicious console activities
+    console.log = function(...args) {
+        if (args.some(arg => String(arg).includes('logout') || String(arg).includes('token'))) {
+            console.warn('🚫 Suspicious console activity detected');
+        }
+        originalConsoleLog.apply(this, args);
+    };
+    
+    // Session heartbeat to maintain connection
+    setInterval(function() {
+        if (sessionProtected && localStorage.getItem('user_token')) {
+            // Send heartbeat to verify session is still valid
+            fetch('/api/auth/verify', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('user_token')}`
+                }
+            }).catch(() => {
+                // If heartbeat fails, show warning but don't auto-logout
+                console.warn('⚠️ Session heartbeat failed - connection issues');
+            });
+        }
+    }, 300000); // Every 5 minutes
+    
+    console.log('🛡️ Logout Protection System activated');
+}
+
+// Show logout confirmation modal
+function showLogoutConfirmation() {
+    // Prevent multiple modals
+    const existingModal = document.querySelector('.logout-confirmation-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal logout-confirmation-modal';
+    modal.style.display = 'flex';
+    modal.style.zIndex = '9999';
+    modal.style.backdropFilter = 'blur(15px)';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 450px; text-align: center; animation: modalSlideIn 0.3s ease-out;">
+            <div class="modal-header">
+                <h2 style="color: var(--neon-magenta);">
+                    <i class="fas fa-shield-alt"></i> Conferma Logout
+                </h2>
+            </div>
+            <div class="modal-body">
+                <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid #ff4757; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff4757; margin-right: 8px;"></i>
+                    <strong style="color: #ff4757;">ATTENZIONE</strong>
+                </div>
+                <p style="color: var(--text-primary); margin-bottom: 20px;">
+                    Sei sicuro di voler uscire dal sistema CRM?
+                </p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
+                    Questa azione ti disconnetterà completamente dal sistema e dovrai rifare il login.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="cancelLogout()" class="btn secondary" style="min-width: 120px;">
+                        <i class="fas fa-times"></i> Annulla
+                    </button>
+                    <button onclick="confirmLogout()" class="btn danger" style="min-width: 120px;">
+                        <i class="fas fa-sign-out-alt"></i> Conferma Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add escape key listener
+    const escapeHandler = function(e) {
+        if (e.key === 'Escape') {
+            cancelLogout();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+    
+    // Add click outside to cancel (but require double click for safety)
+    let clickCount = 0;
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            clickCount++;
+            if (clickCount === 1) {
+                showNotification('Clicca di nuovo fuori dal modal per annullare', 'info');
+                setTimeout(() => { clickCount = 0; }, 2000);
+            } else {
+                cancelLogout();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        }
+    });
+    
+    // Focus on cancel button for accessibility
+    setTimeout(() => {
+        const cancelBtn = modal.querySelector('.btn.secondary');
+        if (cancelBtn) cancelBtn.focus();
+    }, 100);
+}
+
+// Cancel logout and remove modal
+function cancelLogout() {
+    const modal = document.querySelector('.logout-confirmation-modal');
+    if (modal) {
+        modal.style.animation = 'modalSlideOut 0.2s ease-in';
+        setTimeout(() => {
+            modal.remove();
+        }, 200);
+    }
+    
+    // Reset logout attempts counter on cancel
+    logoutAttempts = Math.max(0, logoutAttempts - 1);
+    
+    showNotification('Logout annullato - sessione protetta', 'info');
+    console.log('✅ Logout cancelled by user');
+}
+
+// Confirm logout - authorized way
+function confirmLogout() {
+    // Set authorization flags
+    authorizedLogout = true;
+    sessionProtected = false;
+    
+    const modal = document.querySelector('.logout-confirmation-modal');
+    if (modal) {
+        modal.style.animation = 'modalSlideOut 0.2s ease-in';
+        setTimeout(() => {
+            modal.remove();
+        }, 200);
+    }
+    
+    // Log the authorized logout
+    console.log('✅ Logout authorized by user');
+    showNotification('Disconnessione autorizzata in corso...', 'info');
+    
+    // Add a small delay for UX
+    setTimeout(() => {
+        performSecureLogout();
+    }, 500);
+}
+
+// Secure logout function
+function performSecureLogout() {
+    // Clear all session data
+    localStorage.removeItem('user_token');
+    localStorage.removeItem('current_user');
+    localStorage.removeItem('currentAgent');
+    
+    // Clear any other app-specific data
+    sessionStorage.clear();
+    
+    // Stop any running intervals
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    
+    // Show success message briefly
+    showNotification('Logout completato con successo', 'success');
+    
+    // Redirect after brief delay
+    setTimeout(() => {
+        window.location.href = '/login';
+    }, 1000);
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     // Close all modals immediately on page load
@@ -41,15 +290,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     checkAuthentication();
     
+    // Initialize logout protection system
+    initLogoutProtection();
+    
     // Initialize theme system
     initThemeSystem();
     
     // Initialize cyberpunk effects
     initCyberpunkEffects();
     
+    // Set up logout button event listener
+    setupLogoutButton();
+    
     // Stop auto-refresh when user navigates away or closes page
     window.addEventListener('beforeunload', stopMessageAutoRefresh);
     window.addEventListener('pagehide', stopMessageAutoRefresh);
+    
+    // Push initial state to prevent back button logout
+    history.pushState(null, null, window.location.pathname);
 });
 
 // Close all modals function
@@ -683,11 +941,40 @@ async function verifyToken(token) {
     }
 }
 
+// Setup logout button with protection
+function setupLogoutButton() {
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        // Remove any existing click handlers
+        logoutBtn.removeEventListener('click', unsafeLogout);
+        
+        // Add secure logout handler
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showLogoutConfirmation();
+        });
+        
+        console.log('✅ Logout button secured');
+    }
+}
+
+// Legacy logout function - now protected
 function logout() {
-    localStorage.removeItem('user_token');
-    localStorage.removeItem('current_user');
-    localStorage.removeItem('currentAgent');
-    window.location.href = '/login';
+    if (sessionProtected && !authorizedLogout) {
+        console.warn('🚫 Tentativo di logout non autorizzato - reindirizzamento a conferma');
+        showLogoutConfirmation();
+        return;
+    }
+    
+    // Only allow if authorized
+    performSecureLogout();
+}
+
+// Unsafe logout function (for reference only)
+function unsafeLogout() {
+    console.warn('🚫 Unsafe logout attempt blocked');
+    showLogoutConfirmation();
 }
 
 // Funzione per fare richieste autenticate

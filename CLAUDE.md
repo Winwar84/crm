@@ -1,4 +1,4 @@
-# CRM Pro v2.5 - Cyberpunk Command Center
+# CRM Pro v2.7 - Cyberpunk Command Center
 
 ## 🚀 Quick Start
 ```bash
@@ -58,6 +58,16 @@ docker restart crm-pro
 - **System HUD**: Real-time status indicators e cyber clock
 - **Matrix Effects**: Easter egg Ctrl+Shift+M per Matrix rain
 - **Enhanced UI**: Floating sidebar, neon borders, backdrop blur
+
+### 🛡️ **NEW: Sistema Protezione Logout Avanzata**
+- **Logout Protection**: Solo tramite pulsante dedicato con conferma
+- **Anti-Accidental**: Blocco refresh, back button, chiusura tab involontaria
+- **Modal Sicurezza**: Conferma cyberpunk con doppia verifica
+- **Session Guard**: Protezione localStorage e navigazione programmatica
+- **Heartbeat System**: Mantenimento sessione con verifica ogni 5 minuti
+- **Attempt Counter**: Blocco automatico dopo tentativi non autorizzati
+- **Console Monitoring**: Rilevamento manipolazioni JavaScript sospette
+- **UX Sicuro**: Escape key, focus management, animazioni fluide
 
 ## 📊 Database Schema
 
@@ -279,5 +289,40 @@ getCurrentTheme()         // Get current theme
 - **Local Storage**: Minimal overhead per preferences
 - **Mobile Responsive**: Optimized effects per mobile devices
 
+## 🛡️ Sistema Protezione Logout - Come Funziona
+
+### Meccanismi di Protezione
+1. **Browser Navigation**: Override back/forward button e refresh
+2. **LocalStorage Guard**: Protezione token da manipolazione console
+3. **Programmatic Block**: Intercettazione navigazione automatica
+4. **Session Heartbeat**: Verifica connessione ogni 5 minuti
+
+### Modal di Conferma Sicuro
+- **Design Cyberpunk**: Warning visivi con shield icon
+- **Double Confirmation**: Doppio click fuori modal per sicurezza  
+- **Keyboard Support**: Escape key e focus management
+- **Attempt Counter**: Blocco dopo 3 tentativi non autorizzati
+
+### Funzioni JavaScript Principali
+```javascript
+initLogoutProtection()    // Attiva tutte le protezioni
+showLogoutConfirmation()  // Modal cyberpunk sicuro
+confirmLogout()          // Autorizza logout utente  
+cancelLogout()           // Annulla e reset contatori
+performSecureLogout()    // Logout sicuro finale
+```
+
+### Console Security Logs
+```
+🛡️ Logout Protection System activated
+🚫 Tentativo di logout non autorizzato bloccato (1/3)
+⚠️ Troppi tentativi di logout non autorizzati! Sessione protetta.
+✅ Logout authorized by user
+```
+
+### Scenari Protetti vs Consentiti
+**❌ BLOCCATI**: Refresh, back button, chiusura tab, localStorage manipulation, console hacks  
+**✅ CONSENTITO**: Solo pulsante logout ufficiale con conferma modal
+
 ---
-*CRM Pro v2.5 - Cyberpunk Command Center completo con dual theme system e advanced interactive effects*
+*CRM Pro v2.7 - Cyberpunk Command Center con Sistema Protezione Logout Avanzata* 🛡️
