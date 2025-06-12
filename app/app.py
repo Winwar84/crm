@@ -194,18 +194,31 @@ def update_or_delete_ticket(ticket_id):
         update_data['numero_richiesta_teleassistenza'] = data['numero_richiesta_teleassistenza']
     
     if update_data:
+        # Recupera lo stato attuale prima dell'aggiornamento
+        tickets = TicketService.get_all()
+        current_ticket = next((t for t in tickets if t['id'] == ticket_id), None)
+        old_status = current_ticket['status'] if current_ticket else None
+        
         result = TicketService.update(ticket_id, update_data)
         if result:
-            # Invia notifica email per aggiornamento ticket
+            # Invia email SOLO quando ticket diventa RISOLTO
             try:
-                # Recupera i dati completi del ticket
-                tickets = TicketService.get_all()
-                ticket = next((t for t in tickets if t['id'] == ticket_id), None)
-                if ticket:
-                    update_message = f"Il ticket è stato aggiornato con i seguenti campi: {', '.join(update_data.keys())}"
-                    EmailService.send_ticket_update_notification(ticket, update_message)
+                # Recupera i dati aggiornati del ticket
+                updated_tickets = TicketService.get_all()
+                updated_ticket = next((t for t in updated_tickets if t['id'] == ticket_id), None)
+                
+                if updated_ticket:
+                    new_status = updated_ticket['status']
+                    
+                    # Email SOLO se cambia da qualsiasi stato a "Resolved"
+                    if 'status' in update_data and new_status == 'Resolved' and old_status != 'Resolved':
+                        print(f"📧 Ticket #{ticket_id} risolto: {old_status} → {new_status}")
+                        EmailService.send_ticket_resolved_notification(updated_ticket)
+                    else:
+                        print(f"🔇 Ticket #{ticket_id} aggiornato silenziosamente: {old_status} → {new_status}")
+                        
             except Exception as e:
-                print(f"Errore nell'invio notifica email aggiornamento: {e}")
+                print(f"Errore nell'invio notifica email risoluzione: {e}")
             
             return jsonify({'message': 'Ticket aggiornato con successo'})
         else:

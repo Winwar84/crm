@@ -353,6 +353,91 @@ Il Team di Supporto"""
         return EmailService.send_email(ticket_data['customer_email'], subject, body)
     
     @staticmethod
+    def send_ticket_resolved_notification(ticket_data):
+        """Invia notifica specifica quando ticket è risolto"""
+        template = EmailService.get_email_template('resolved_ticket')
+        if not template:
+            # Template cyberpunk uniformato per risoluzione
+            subject = "🎯 Ticket #{ticket_id} - RISOLTO"
+            body = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }}
+        .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #00ffff 0%, #0066cc 100%); color: white; padding: 30px 25px; text-align: center; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: 600; }}
+        .content {{ padding: 30px 25px; line-height: 1.6; color: #333; }}
+        .ticket-info {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffff; }}
+        .status-resolved {{ color: #00ff41; font-weight: bold; font-size: 18px; }}
+        .footer {{ background: #f8f9fa; padding: 20px 25px; text-align: center; color: #666; font-size: 14px; }}
+        .btn {{ display: inline-block; background: #00ffff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; font-weight: 500; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 TICKET RISOLTO</h1>
+        </div>
+        <div class="content">
+            <p>Gentile <strong>{customer_name}</strong>,</p>
+            
+            <p>Siamo lieti di informarla che il suo ticket è stato <span class="status-resolved">RISOLTO</span> con successo!</p>
+            
+            <div class="ticket-info">
+                <strong>Ticket #{ticket_id}:</strong> {ticket_title}<br>
+                <strong>Stato:</strong> <span class="status-resolved">✅ RISOLTO</span><br>
+                <strong>Priorità:</strong> {priority}
+            </div>
+            
+            <p>La problematica è stata gestita dal nostro team tecnico e dovrebbe ora essere completamente risolta.</p>
+            
+            <p><strong>🔄 Cosa succede ora?</strong></p>
+            <ul>
+                <li>Il ticket è stato marcato come risolto</li>
+                <li>Se ha ancora problemi, può rispondere a questa email</li>
+                <li>La sua risposta riaprirà automaticamente il ticket</li>
+                <li>Il nostro team sarà immediatamente notificato</li>
+            </ul>
+            
+            <p style="margin-top: 25px;">
+                <strong>📧 Serve altro supporto?</strong><br>
+                Risponda direttamente a questa email e il ticket sarà riaperto automaticamente.
+            </p>
+        </div>
+        <div class="footer">
+            <p>🤖 <strong>CRM Pro v2.7 - Cyberpunk Command Center</strong></p>
+            <p>Questo è un messaggio automatico del sistema di supporto</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+        else:
+            subject = template['subject']
+            body = template['body']
+        
+        # Sostituisci i placeholder
+        subject = subject.format(
+            ticket_id=ticket_data.get('id', ''),
+            ticket_title=ticket_data.get('title', ''),
+            customer_name=ticket_data.get('customer_name', '')
+        )
+        
+        body = body.format(
+            ticket_id=ticket_data.get('id', ''),
+            ticket_title=ticket_data.get('title', ''),
+            customer_name=ticket_data.get('customer_name', ''),
+            priority=ticket_data.get('priority', 'Media'),
+            ticket_status=ticket_data.get('status', '')
+        )
+        
+        print(f"📧 Invio email risoluzione ticket #{ticket_data.get('id')} a {ticket_data.get('customer_email')}")
+        return EmailService.send_email(ticket_data['customer_email'], subject, body)
+    
+    @staticmethod
     def clean_reply_message(body):
         """Pulisce il messaggio email estraendo solo la parte nuova della risposta"""
         if not body:
@@ -501,6 +586,7 @@ Il Team di Supporto"""
                         
                         if tickets:
                             ticket = tickets[0]
+                            current_status = ticket.get('status', '')
                             
                             # Estrai info mittente
                             from_email = email_msg.get("From", "")
@@ -523,6 +609,35 @@ Il Team di Supporto"""
                             # Pulisci il messaggio estraendo solo la parte nuova
                             body = EmailService.clean_reply_message(body)
                             
+                            # 🔄 AUTO-RIAPERTURA: Se ticket è RISOLTO e cliente risponde → RIAPRI
+                            if current_status == 'Resolved':
+                                print(f"🔄 RIAPERTURA AUTOMATICA: Ticket #{ticket_id} era RISOLTO, cliente ha risposto")
+                                
+                                # Aggiorna stato ticket a "In Progress"
+                                from task_helper import update_in_supabase
+                                reopen_result = update_in_supabase('tickets', 
+                                                                 {'id': ticket_id}, 
+                                                                 {'status': 'In Progress'})
+                                
+                                if reopen_result:
+                                    print(f"✅ Ticket #{ticket_id} riaperto automaticamente: Resolved → In Progress")
+                                    
+                                    # Aggiungi messaggio di sistema per notificare la riapertura
+                                    system_message = {
+                                        'ticket_id': ticket_id,
+                                        'sender_type': 'system',
+                                        'sender_name': 'Sistema CRM',
+                                        'sender_email': 'system@crm.local',
+                                        'message_text': f"🔄 Ticket riaperto automaticamente - Il cliente {sender_name} ha risposto a un ticket risolto",
+                                        'is_internal': True,
+                                        'email_message_id': ''
+                                    }
+                                    
+                                    from task_helper import save_to_supabase
+                                    save_to_supabase('ticket_messages', system_message)
+                                else:
+                                    print(f"❌ Errore nella riapertura del ticket #{ticket_id}")
+                            
                             # Crea un messaggio per il ticket esistente
                             message_data = {
                                 'ticket_id': ticket_id,
@@ -538,7 +653,7 @@ Il Team di Supporto"""
                             message_result = save_to_supabase('ticket_messages', message_data)
                             
                             if message_result:
-                                print(f"Messaggio aggiunto al ticket #{ticket_id} da {sender_email}")
+                                print(f"📬 Messaggio aggiunto al ticket #{ticket_id} da {sender_email}")
                                 
                                 # NON inviare notifica email agli agenti per risposte clienti
                                 # I messaggi appaiono solo nella chat del CRM
@@ -604,75 +719,59 @@ Il Team di Supporto"""
             # Prepara il contenuto email
             subject = f"Re: Ticket #{ticket['id']} - {ticket['title']}"
             
-            # Template HTML professionale
+            # Template HTML cyberpunk uniformato
             html_body = f"""
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Pro - Aggiornamento Ticket</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }}
+        .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #00ffff 0%, #0066cc 100%); color: white; padding: 30px 25px; text-align: center; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: 600; }}
+        .content {{ padding: 30px 25px; line-height: 1.6; color: #333; }}
+        .message-box {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffff; }}
+        .ticket-info {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffff; }}
+        .footer {{ background: #f8f9fa; padding: 20px 25px; text-align: center; color: #666; font-size: 14px; }}
+        .status-badge {{ background: #00ffff; color: white; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; }}
+    </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f6fa;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f6fa; padding: 20px;">
-        <tr>
-            <td align="center">
-                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden;">
-                    
-                    <!-- Header -->
-                    <tr>
-                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
-                                <span style="font-size: 32px;">🎧</span> CRM Pro
-                            </h1>
-                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">
-                                Sistema di Supporto Clienti
-                            </p>
-                        </td>
-                    </tr>
-                    
-                    <!-- Ticket Info Banner -->
-                    <tr>
-                        <td style="background-color: #e3f2fd; padding: 20px 40px; border-bottom: 1px solid #e9ecef;">
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="width: 50%;">
-                                        <h3 style="margin: 0; color: #1565c0; font-size: 18px;">
-                                            📋 Ticket #{ticket['id']}
-                                        </h3>
-                                        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-                                            {ticket['title']}
-                                        </p>
-                                    </td>
-                                    <td style="text-align: right;">
-                                        <span style="background-color: #{'#4caf50' if ticket['status'] == 'Open' else '#ff9800' if ticket['status'] == 'In Progress' else '#2196f3'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                                            {ticket['status']}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <!-- Main Content -->
-                    <tr>
-                        <td style="padding: 40px;">
-                            <h2 style="color: #333; margin: 0 0 20px 0; font-size: 20px;">
-                                Ciao {ticket['customer_name']},
-                            </h2>
-                            
-                            <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                                <p style="margin: 0; color: #333; font-size: 16px; line-height: 1.6;">
-                                    {message['message_text'].replace(chr(10), '<br>')}
-                                </p>
-                            </div>
-                            
-                            <p style="color: #666; font-size: 14px; margin: 30px 0 20px 0;">
-                                Per rispondere a questo messaggio, <strong>rispondi semplicemente a questa email</strong>. 
-                                La tua risposta verrà automaticamente aggiunta alla conversazione del ticket.
-                            </p>
-                        </td>
-                    </tr>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 NUOVO MESSAGGIO</h1>
+        </div>
+        <div class="content">
+            <p>Gentile <strong>{ticket['customer_name']}</strong>,</p>
+            
+            <p>Hai ricevuto un nuovo messaggio per il tuo ticket:</p>
+            
+            <div class="ticket-info">
+                <strong>Ticket #{ticket['id']}:</strong> {ticket['title']}<br>
+                <strong>Stato:</strong> <span class="status-badge">{ticket['status']}</span><br>
+                <strong>Priorità:</strong> {ticket['priority']}
+            </div>
+            
+            <div class="message-box">
+                <strong>📨 Messaggio dal supporto:</strong><br><br>
+                {message['message_text'].replace(chr(10), '<br>')}
+            </div>
+            
+            <p><strong>🔄 Per rispondere:</strong></p>
+            <ul>
+                <li>Rispondi direttamente a questa email</li>
+                <li>Il tuo messaggio sarà aggiunto automaticamente al ticket</li>
+                <li>Il nostro team riceverà immediatamente la notifica</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <p>🤖 <strong>CRM Pro v2.7 - Cyberpunk Command Center</strong></p>
+            <p>Questo è un messaggio automatico del sistema di supporto</p>
+        </div>
+    </div>
+</body>
+</html>
                     
                     <!-- Ticket Details -->
                     <tr>
@@ -713,10 +812,7 @@ Il Team di Supporto"""
                     
                 </table>
             </td>
-        </tr>
-    </table>
-</body>
-</html>"""
+"""
             
             # Template testo fallback per client che non supportano HTML
             text_body = f"""Gentile {ticket['customer_name']},
