@@ -2345,24 +2345,26 @@ async function loadTicketMessages(ticketId) {
             return;
         }
         
-        // Genera il nuovo HTML
+        // Genera il nuovo HTML con fumetti
         const newHTML = messages.map(message => {
             const messageDate = new Date(message.created_at);
             const isAgent = message.sender_type === 'agent';
             const isInternal = message.is_internal;
             
+            // Determina il tipo di bubble
+            let bubbleClass = isInternal ? 'internal' : (isAgent ? 'agent' : 'customer');
+            
             return `
-                <div class="message ${isAgent ? 'message-agent' : 'message-customer'} ${isInternal ? 'message-internal' : ''}">
-                    <div class="message-header">
-                        <div class="message-sender">
-                            <i class="fas ${isAgent ? 'fa-user-tie' : 'fa-user'}"></i>
-                            ${escapeHtml(message.sender_name)}
-                            ${isInternal ? '<span class="internal-badge">Interno</span>' : ''}
-                        </div>
-                        <div class="message-time">${formatMessageDate(messageDate)}</div>
-                    </div>
+                <div class="message-bubble ${bubbleClass}">
                     <div class="message-content">
                         ${escapeHtml(message.message_text).replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="message-meta">
+                        <div class="message-author">
+                            <i class="fas ${isAgent ? 'fa-user-tie' : 'fa-user'}"></i>
+                            ${escapeHtml(message.sender_name)}
+                        </div>
+                        <div class="message-time">${formatMessageDate(messageDate)}</div>
                     </div>
                 </div>
             `;

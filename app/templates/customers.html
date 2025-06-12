@@ -50,8 +50,8 @@
 
             <div class="customers-filters">
                 <div class="filter-group">
-                    <label for="statusFilter">Stato:</label>
-                    <select id="statusFilter" onchange="filterCustomers()">
+                    <label for="customers-statusFilter">Stato:</label>
+                    <select id="customers-statusFilter" onchange="filterCustomers()">
                         <option value="">Tutti</option>
                         <option value="Active">Attivi</option>
                         <option value="Inactive">Inattivi</option>
@@ -60,14 +60,14 @@
                 </div>
                 
                 <div class="filter-group">
-                    <label for="companyFilter">Azienda:</label>
-                    <select id="companyFilter" onchange="filterCustomers()">
+                    <label for="customers-companyFilter">Azienda:</label>
+                    <select id="customers-companyFilter" onchange="filterCustomers()">
                         <option value="">Tutte</option>
                     </select>
                 </div>
                 
                 <div class="search-group">
-                    <input type="text" id="searchCustomers" placeholder="Cerca clienti..." onkeyup="searchCustomers()">
+                    <input type="text" id="customers-searchCustomers" placeholder="Cerca clienti..." onkeyup="searchCustomers()">
                     <i class="fas fa-search"></i>
                 </div>
             </div>

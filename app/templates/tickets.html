@@ -48,8 +48,8 @@
 
             <div class="tickets-filters">
                 <div class="filter-group">
-                    <label for="statusFilter">Stato:</label>
-                    <select id="statusFilter" onchange="filterTickets()">
+                    <label for="tickets-statusFilter">Stato:</label>
+                    <select id="tickets-statusFilter" onchange="filterTickets()">
                         <option value="">Tutti</option>
                         <option value="Open">Aperti</option>
                         <option value="In Progress">In Corso</option>
@@ -59,8 +59,8 @@
                 </div>
                 
                 <div class="filter-group">
-                    <label for="priorityFilter">Priorità:</label>
-                    <select id="priorityFilter" onchange="filterTickets()">
+                    <label for="tickets-priorityFilter">Priorità:</label>
+                    <select id="tickets-priorityFilter" onchange="filterTickets()">
                         <option value="">Tutte</option>
                         <option value="Low">Bassa</option>
                         <option value="Medium">Media</option>
@@ -70,7 +70,7 @@
                 </div>
                 
                 <div class="search-group">
-                    <input type="text" id="searchTickets" placeholder="Cerca ticket..." onkeyup="searchTickets()">
+                    <input type="text" id="tickets-searchTickets" placeholder="Cerca ticket..." onkeyup="searchTickets()">
                     <i class="fas fa-search"></i>
                 </div>
             </div>
@@ -386,8 +386,8 @@
     </div>
 
     <!-- Modal Dettagli Ticket -->
-    <div id="ticketDetailsModal" class="modal modal-ticket-details">
-        <div class="modal-content">
+    <div id="ticketDetailsModal" class="modal modal-ticket-details modal-fullscreen">
+        <div class="modal-content fullscreen-content">
             <!-- Main content area -->
             <div class="main-content-area">
                 <div class="modal-header">

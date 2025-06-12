@@ -321,8 +321,8 @@ async function assignTicketToMe(ticketId) {
 
 // Filter tickets
 function filterTickets() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const priorityFilter = document.getElementById('priorityFilter').value;
+    const statusFilter = document.getElementById('tickets-statusFilter').value;
+    const priorityFilter = document.getElementById('tickets-priorityFilter').value;
     
     filteredTickets = allTickets.filter(ticket => {
         const statusMatch = !statusFilter || ticket.status === statusFilter;
@@ -335,7 +335,7 @@ function filterTickets() {
 
 // Search tickets
 function searchTickets() {
-    const searchTerm = document.getElementById('searchTickets').value.toLowerCase();
+    const searchTerm = document.getElementById('tickets-searchTickets').value.toLowerCase();
     
     if (!searchTerm) {
         filterTickets(); // Apply current filters

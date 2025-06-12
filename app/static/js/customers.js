@@ -221,8 +221,8 @@ async function handleEditCustomerSubmission(e) {
 
 // Filter customers
 function filterCustomers() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const companyFilter = document.getElementById('companyFilter').value;
+    const statusFilter = document.getElementById('customers-statusFilter').value;
+    const companyFilter = document.getElementById('customers-companyFilter').value;
     
     filteredCustomers = allCustomers.filter(customer => {
         const statusMatch = !statusFilter || customer.status === statusFilter;
@@ -235,7 +235,7 @@ function filterCustomers() {
 
 // Search customers
 function searchCustomers() {
-    const searchTerm = document.getElementById('searchCustomers').value.toLowerCase();
+    const searchTerm = document.getElementById('customers-searchCustomers').value.toLowerCase();
     
     if (!searchTerm) {
         filterCustomers(); // Apply current filters
@@ -254,7 +254,7 @@ function searchCustomers() {
 
 // Populate company filter dropdown
 function populateCompanyFilter() {
-    const companyFilter = document.getElementById('companyFilter');
+    const companyFilter = document.getElementById('customers-companyFilter');
     const companies = [...new Set(allCustomers.filter(c => c.company).map(c => c.company))].sort();
     
     // Clear existing options except "Tutte"
