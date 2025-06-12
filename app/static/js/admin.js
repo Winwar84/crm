@@ -220,7 +220,7 @@ function openApproveUserModal(userId, fullName, username, email) {
 
 // Close approve user modal
 function closeApproveUserModal() {
-    document.getElementById('approveUserModal').style.display = 'none';
+    document.getElementById('approveUserModal').style.setProperty('display', 'none', 'important');
     document.getElementById('approveUserForm').reset();
 }
 

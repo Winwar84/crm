@@ -1463,7 +1463,7 @@ function openNewCustomerModal() {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    document.getElementById(modalId).style.setProperty('display', 'none', 'important');
     
     // Stop auto-refresh when closing ticket details modal to prevent conflicts
     if (modalId === 'ticketDetailsModal') {
@@ -1476,7 +1476,7 @@ function closeModal(modalId) {
 // Close modal when clicking outside
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+        event.target.style.setProperty('display', 'none', 'important');
     }
 }
 

@@ -45,6 +45,11 @@ async function fetchWithAuth(url, options = {}) {
 // Initialize tickets page
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/tickets') {
+        // Close any open modals first
+        closeModal('editTicketModal');
+        closeModal('newTicketModal');
+        closeModal('ticketDetailsModal');
+        
         loadAllTickets();
         loadAgentsForTickets();
         loadTicketConfigurationOptions(); // AGGIUNTO: Carica configurazioni per i menu a tendina
@@ -415,7 +420,20 @@ async function openEditTicketModal(ticketId) {
 async function handleEditTicketSubmission(e) {
     e.preventDefault();
     
-    const ticketId = document.getElementById('editTicketId').value;
+    const ticketIdElement = document.getElementById('editTicketId');
+    console.log('🔍 EditTicketId element:', ticketIdElement);
+    const ticketId = ticketIdElement ? ticketIdElement.value : null;
+    console.log('🎫 Editing ticket ID:', ticketId);
+    
+    if (!ticketId) {
+        console.error('❌ Ticket ID mancante!');
+        console.log('🔍 Current form elements:', {
+            form: document.getElementById('editTicketForm'),
+            hiddenField: document.getElementById('editTicketId')
+        });
+        showNotification('Errore: ID ticket mancante', 'error');
+        return;
+    }
     const formData = {
         title: document.getElementById('editTicketTitle').value,
         description: document.getElementById('editTicketDescription').value,
