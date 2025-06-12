@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accesso Clienti - CRM Pro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <!-- Particle System -->
+    <div id="particleContainer" class="particle-container"></div>
+    
+    <div class="login-container customer-login">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="logo-section">
+                    <h1 class="logo-text">🛡️ CRM Pro</h1>
+                    <p class="logo-subtitle">Cyberpunk Command Center</p>
+                </div>
+                <div class="customer-badge">
+                    <span class="badge-icon">👤</span>
+                    <span class="badge-text">AREA CLIENTI</span>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="login-form-container">
+                <div class="form-header">
+                    <h2>Accesso Clienti</h2>
+                    <p>Accedi per visualizzare i tuoi ticket di supporto</p>
+                </div>
+
+                <form id="customerLoginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required 
+                               placeholder="La tua email registrata">
+                        <div class="input-icon">📧</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required
+                               placeholder="La tua password">
+                        <div class="input-icon">🔐</div>
+                    </div>
+
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <span class="btn-text">Accedi</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="spinner"></span> Accesso in corso...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Registration Link -->
+                <div class="form-footer">
+                    <p>Non hai ancora un account?</p>
+                    <a href="#" id="showRegisterForm" class="register-link">
+                        🎫 Registrati come Cliente
+                    </a>
+                </div>
+            </div>
+
+            <!-- Registration Form (initially hidden) -->
+            <div class="register-form-container" id="registerFormContainer" style="display: none;">
+                <div class="form-header">
+                    <h2>Registrazione Cliente</h2>
+                    <p>Crea il tuo account per accedere al supporto</p>
+                </div>
+
+                <form id="customerRegisterForm" class="login-form">
+                    <div class="form-group">
+                        <label for="reg_name">Nome Completo</label>
+                        <input type="text" id="reg_name" name="name" required
+                               placeholder="Il tuo nome completo">
+                        <div class="input-icon">👤</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg_email">Email</label>
+                        <input type="email" id="reg_email" name="email" required
+                               placeholder="La tua email">
+                        <div class="input-icon">📧</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg_phone">Telefono (opzionale)</label>
+                        <input type="tel" id="reg_phone" name="phone"
+                               placeholder="Il tuo numero di telefono">
+                        <div class="input-icon">📱</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg_company">Azienda (opzionale)</label>
+                        <input type="text" id="reg_company" name="company"
+                               placeholder="Nome della tua azienda">
+                        <div class="input-icon">🏢</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg_password">Password</label>
+                        <input type="password" id="reg_password" name="password" required
+                               placeholder="Scegli una password sicura" minlength="6">
+                        <div class="input-icon">🔐</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg_confirm_password">Conferma Password</label>
+                        <input type="password" id="reg_confirm_password" name="confirm_password" required
+                               placeholder="Ripeti la password">
+                        <div class="input-icon">🔒</div>
+                    </div>
+
+                    <button type="submit" class="login-btn register-btn" id="registerBtn">
+                        <span class="btn-text">Registrati</span>
+                        <span class="btn-loading" style="display: none;">
+                            <span class="spinner"></span> Registrazione...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Back to Login -->
+                <div class="form-footer">
+                    <p>Hai già un account?</p>
+                    <a href="#" id="showLoginForm" class="register-link">
+                        🔑 Torna al Login
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <p>&copy; 2025 CRM Pro v2.7 - Sistema di Supporto Clienti</p>
+                <div class="theme-toggle-container">
+                    <button id="themeToggle" class="theme-toggle-btn">
+                        <span class="theme-icon">🌙</span>
+                        <span class="theme-text">Light Mode</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- Custom CSS for Customer Login -->
+    <style>
+        .customer-login .login-card {
+            max-width: 500px;
+        }
+
+        .customer-badge {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .badge-icon {
+            font-size: 16px;
+        }
+
+        .badge-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .register-btn {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-magenta));
+        }
+
+        .register-btn:hover {
+            background: linear-gradient(135deg, var(--neon-magenta), var(--neon-purple));
+            transform: translateY(-2px);
+        }
+
+        .register-link {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .register-link:hover {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-footer p {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* Animation for form switching */
+        .register-form-container,
+        .login-form-container {
+            transition: all 0.5s ease;
+        }
+
+        .slide-out {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .slide-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Initialize theme and particles
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            initCyberpunkEffects();
+            initCustomerLogin();
+        });
+
+        function initCustomerLogin() {
+            const loginForm = document.getElementById('customerLoginForm');
+            const registerForm = document.getElementById('customerRegisterForm');
+            const showRegisterBtn = document.getElementById('showRegisterForm');
+            const showLoginBtn = document.getElementById('showLoginForm');
+            const loginContainer = document.querySelector('.login-form-container');
+            const registerContainer = document.getElementById('registerFormContainer');
+
+            // Toggle between login and register forms
+            showRegisterBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchToRegister();
+            });
+
+            showLoginBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchToLogin();
+            });
+
+            function switchToRegister() {
+                loginContainer.style.display = 'none';
+                registerContainer.style.display = 'block';
+                registerContainer.style.opacity = '0';
+                setTimeout(() => {
+                    registerContainer.style.opacity = '1';
+                }, 50);
+            }
+
+            function switchToLogin() {
+                registerContainer.style.display = 'none';
+                loginContainer.style.display = 'block';
+                loginContainer.style.opacity = '0';
+                setTimeout(() => {
+                    loginContainer.style.opacity = '1';
+                }, 50);
+            }
+
+            // Handle customer login
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const loginBtn = document.getElementById('loginBtn');
+                
+                // Show loading state
+                toggleButtonLoading(loginBtn, true);
+                
+                try {
+                    const response = await fetch('/api/auth/customer/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // Save customer token
+                        localStorage.setItem('customer_token', data.token);
+                        localStorage.setItem('customer_data', JSON.stringify(data.customer));
+                        
+                        showNotification('Accesso effettuato con successo!', 'success');
+                        
+                        // Redirect to customer dashboard
+                        setTimeout(() => {
+                            window.location.href = '/customer-dashboard';
+                        }, 1000);
+                    } else {
+                        showNotification(data.error || 'Errore nel login', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Errore di connessione', 'error');
+                } finally {
+                    toggleButtonLoading(loginBtn, false);
+                }
+            });
+
+            // Handle customer registration
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(registerForm);
+                const data = Object.fromEntries(formData);
+                
+                // Validate password confirmation
+                if (data.password !== data.confirm_password) {
+                    showNotification('Le password non coincidono', 'error');
+                    return;
+                }
+                
+                const registerBtn = document.getElementById('registerBtn');
+                toggleButtonLoading(registerBtn, true);
+                
+                try {
+                    const response = await fetch('/api/auth/customer/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showNotification('Registrazione completata! Ora puoi accedere.', 'success');
+                        
+                        // Switch back to login form
+                        setTimeout(() => {
+                            switchToLogin();
+                            document.getElementById('email').value = data.email;
+                        }, 1500);
+                    } else {
+                        showNotification(result.error || 'Errore nella registrazione', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Errore di connessione', 'error');
+                } finally {
+                    toggleButtonLoading(registerBtn, false);
+                }
+            });
+        }
+
+        function toggleButtonLoading(button, loading) {
+            const btnText = button.querySelector('.btn-text');
+            const btnLoading = button.querySelector('.btn-loading');
+            
+            if (loading) {
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'inline-flex';
+                button.disabled = true;
+            } else {
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

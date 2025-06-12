@@ -307,47 +307,83 @@ class EmailService:
     
     @staticmethod
     def send_new_ticket_notification(ticket_data):
-        """Invia notifica per nuovo ticket"""
-        template = EmailService.get_email_template('new_ticket')
-        if not template:
-            # Template predefinito
-            subject = "Nuovo Ticket #{ticket_id} - {ticket_title}"
-            body = """Gentile {customer_name},
-
-Il suo ticket #{ticket_id} "{ticket_title}" è stato creato con successo.
-
-Descrizione: {ticket_description}
-Priorità: {ticket_priority}
-Stato: {ticket_status}
-
-La terremo aggiornata sui progressi.
-
-Cordiali saluti,
-Il Team di Supporto"""
-        else:
-            subject = template['subject']
-            body = template['body']
-        
-        # Sostituisci i placeholder
-        subject = subject.format(
-            ticket_id=ticket_data.get('id', ''),
-            ticket_title=ticket_data.get('title', ''),
-            customer_name=ticket_data.get('customer_name', ''),
-            ticket_description=ticket_data.get('description', ''),
-            ticket_priority=ticket_data.get('priority', ''),
-            ticket_status=ticket_data.get('status', 'Open')
-        )
-        
-        body = body.format(
-            ticket_id=ticket_data.get('id', ''),
-            ticket_title=ticket_data.get('title', ''),
-            customer_name=ticket_data.get('customer_name', ''),
-            ticket_description=ticket_data.get('description', ''),
-            ticket_priority=ticket_data.get('priority', ''),
-            ticket_status=ticket_data.get('status', 'Open')
-        )
-        
-        return EmailService.send_email(ticket_data['customer_email'], subject, body)
+        """Invia notifica per nuovo ticket con template HTML cyberpunk uniforme"""
+        try:
+            # Template stile uniforme cyberpunk per apertura ticket
+            subject = f"🎫 Nuovo Ticket #{ticket_data.get('id')} - {ticket_data.get('title', '')}"
+            
+            # Determina colore priorità
+            priority_color = "#f44336" if ticket_data.get('priority') == 'Urgent' else "#ff9800" if ticket_data.get('priority') == 'High' else "#4caf50"
+            
+            body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }}
+        .container {{ max-width: 700px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }}
+        .header {{ background: linear-gradient(135deg, #00ffff 0%, #0066cc 100%); color: white; padding: 30px 25px; text-align: center; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-weight: 600; }}
+        .content {{ padding: 30px 25px; line-height: 1.6; color: #333; }}
+        .ticket-info {{ background: #e8f5ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00ffff; }}
+        .status-new {{ color: #00ffff; font-weight: bold; font-size: 18px; }}
+        .priority-badge {{ color: {priority_color}; font-weight: bold; }}
+        .next-steps {{ background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0066cc; }}
+        .footer {{ background: #f8f9fa; padding: 20px 25px; text-align: center; color: #666; font-size: 14px; }}
+        .support-info {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎫 NUOVO TICKET CREATO</h1>
+        </div>
+        <div class="content">
+            <p>Gentile <strong>{ticket_data.get('customer_name', '')}</strong>,</p>
+            
+            <p>Il suo ticket è stato <span class="status-new">CREATO CON SUCCESSO</span> nel nostro sistema!</p>
+            
+            <div class="ticket-info">
+                <strong>Ticket #{ticket_data.get('id', '')}:</strong> {ticket_data.get('title', '')}<br>
+                <strong>Stato:</strong> <span class="status-new">📋 {ticket_data.get('status', 'Open').upper()}</span><br>
+                <strong>Priorità:</strong> <span class="priority-badge">{ticket_data.get('priority', 'Media')}</span><br>
+                <strong>Descrizione:</strong> {ticket_data.get('description', '')[:200]}{'...' if len(ticket_data.get('description', '')) > 200 else ''}
+            </div>
+            
+            <div class="next-steps">
+                <strong>🔄 Prossimi Passi:</strong><br>
+                • Il nostro team tecnico ha ricevuto la sua richiesta<br>
+                • Un agente la contatterà entro le prossime ore lavorative<br>
+                • Riceverà aggiornamenti via email ad ogni sviluppo<br>
+                • Può rispondere a questa email per aggiungere informazioni
+            </div>
+            
+            <div class="support-info">
+                <strong>💬 Comunicazione:</strong><br>
+                Per aggiungere informazioni al ticket, <strong>risponda direttamente a questa email</strong>.<br>
+                Il suo messaggio sarà automaticamente collegato al ticket #{ticket_data.get('id', '')}.
+            </div>
+            
+            <p style="margin-top: 25px;">
+                Grazie per aver scelto il nostro servizio di supporto!
+            </p>
+        </div>
+        <div class="footer">
+            <p>🤖 <strong>CRM Pro v2.7 - Cyberpunk Command Center</strong></p>
+            <p>Ticket creato automaticamente • Sistema di supporto clienti</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+            
+            print(f"📧 Invio email creazione ticket #{ticket_data.get('id')} a {ticket_data.get('customer_email')}")
+            return EmailService.send_html_email(ticket_data['customer_email'], subject, body)
+            
+        except Exception as e:
+            print(f"❌ Errore nell'invio email nuovo ticket: {e}")
+            return False
     
     @staticmethod
     def send_ticket_update_notification(ticket_data, update_message=""):

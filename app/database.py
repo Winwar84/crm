@@ -154,6 +154,102 @@ class CustomerService:
         except Exception as e:
             print(f"Errore nell'eliminazione cliente: {e}")
             return False
+    
+    @staticmethod
+    def register_customer(customer_data):
+        """Registra un nuovo cliente con credenziali di accesso"""
+        try:
+            import bcrypt
+            from task_helper import save_to_supabase, get_from_supabase
+            
+            # Verifica se email già esistente
+            existing = get_from_supabase('customers', {'email': customer_data['email']})
+            if existing:
+                return None, "Email già registrata"
+            
+            # Hash della password
+            password_hash = bcrypt.hashpw(customer_data['password'].encode('utf-8'), bcrypt.gensalt())
+            
+            # Prepara dati cliente
+            new_customer_data = {
+                'name': customer_data['name'],
+                'email': customer_data['email'],
+                'phone': customer_data.get('phone', ''),
+                'company': customer_data.get('company', ''),
+                'address': customer_data.get('address', ''),
+                'notes': customer_data.get('notes', ''),
+                'status': 'Active',
+                'password_hash': password_hash.decode('utf-8'),
+                'can_login': True
+            }
+            
+            result = save_to_supabase('customers', new_customer_data)
+            
+            if result:
+                customer = result[0] if isinstance(result, list) else result
+                # Non restituire la password hash
+                customer.pop('password_hash', None)
+                return customer, None
+            return None, "Errore nella registrazione"
+            
+        except Exception as e:
+            print(f"Errore nella registrazione cliente: {e}")
+            return None, f"Errore: {str(e)}"
+    
+    @staticmethod
+    def customer_login(email, password):
+        """Login cliente"""
+        try:
+            import bcrypt
+            from task_helper import get_from_supabase
+            
+            # Cerca cliente per email
+            customers = get_from_supabase('customers', 
+                                        filters={'email': email, 'status': 'Active', 'can_login': True})
+            
+            if not customers:
+                return None, "Credenziali non valide"
+            
+            customer = customers[0]
+            
+            # Verifica password
+            if not customer.get('password_hash'):
+                return None, "Account non configurato per il login"
+            
+            if bcrypt.checkpw(password.encode('utf-8'), customer['password_hash'].encode('utf-8')):
+                # Login riuscito - genera token
+                token = UserService.generate_customer_token(customer)
+                
+                # Rimuovi password hash dalla risposta
+                customer_data = customer.copy()
+                customer_data.pop('password_hash', None)
+                
+                return {'customer': customer_data, 'token': token}, None
+            else:
+                return None, "Credenziali non valide"
+                
+        except Exception as e:
+            print(f"Errore nel login cliente: {e}")
+            return None, "Errore interno del server"
+    
+    @staticmethod
+    def get_customer_by_email(email):
+        """Recupera cliente per email"""
+        try:
+            from task_helper import get_from_supabase
+            
+            customers = get_from_supabase('customers', 
+                                        filters={'email': email, 'status': 'Active'})
+            
+            if customers:
+                customer = customers[0]
+                customer.pop('password_hash', None)  # Non esporre password hash
+                return customer
+            return None
+            
+        except Exception as e:
+            print(f"Errore nel recupero cliente: {e}")
+            return None
 
 # Funzioni CRUD per Agents
 class AgentService:
@@ -301,6 +397,31 @@ class UserService:
         try:
             payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
             return payload
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
+    
+    @staticmethod
+    def generate_customer_token(customer_data):
+        """Genera un JWT token per cliente"""
+        payload = {
+            'customer_id': customer_data['id'],
+            'customer_email': customer_data['email'],
+            'customer_name': customer_data['name'],
+            'user_type': 'customer',
+            'exp': datetime.utcnow() + timedelta(days=30)  # Token cliente valido per 30 giorni
+        }
+        return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+    
+    @staticmethod
+    def verify_customer_token(token):
+        """Verifica un JWT token cliente"""
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            if payload.get('user_type') == 'customer':
+                return payload
+            return None
         except jwt.ExpiredSignatureError:
             return None
         except jwt.InvalidTokenError:

@@ -45,6 +45,27 @@ def token_required(f):
     
     return decorated
 
+def customer_token_required(f):
+    """Decorator per richiedere autenticazione cliente"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token and token.startswith('Bearer '):
+            token = token[7:]  # Rimuovi 'Bearer '
+        
+        if not token:
+            return jsonify({'error': 'Token mancante'}), 401
+        
+        payload = UserService.verify_customer_token(token)
+        if not payload:
+            return jsonify({'error': 'Token cliente non valido'}), 401
+        
+        # Aggiungi le info cliente alla richiesta
+        request.current_customer = payload
+        return f(*args, **kwargs)
+    
+    return decorated
+
 @app.route('/')
 def dashboard():
     return render_template('dashboard.html')
@@ -80,6 +101,14 @@ def settings_page():
 @app.route('/admin')
 def admin_page():
     return render_template('admin.html')
+
+@app.route('/customer-login')
+def customer_login_page():
+    return render_template('customer-login.html')
+
+@app.route('/customer-dashboard')
+def customer_dashboard_page():
+    return render_template('customer-dashboard.html')
 
 @app.route('/api/tickets', methods=['GET', 'POST'])
 @token_required
@@ -1147,6 +1176,191 @@ def reports_ticket_trends():
             'resolved': resolved,
             'inProgress': in_progress
         })
+
+# API Endpoints per Autenticazione Clienti
+@app.route('/api/auth/customer/register', methods=['POST'])
+def customer_register():
+    """Registrazione cliente"""
+    try:
+        data = request.json
+        
+        # Validazione dati
+        required_fields = ['name', 'email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'Campo {field} richiesto'}), 400
+        
+        if len(data['password']) < 6:
+            return jsonify({'error': 'La password deve essere di almeno 6 caratteri'}), 400
+        
+        # Registrazione cliente
+        customer, error = CustomerService.register_customer(data)
+        if customer:
+            return jsonify({
+                'message': 'Registrazione completata con successo',
+                'customer': customer
+            })
+        else:
+            return jsonify({'error': error or 'Errore nella registrazione'}), 400
+            
+    except Exception as e:
+        print(f"Errore registrazione cliente: {e}")
+        return jsonify({'error': 'Errore interno del server'}), 500
+
+@app.route('/api/auth/customer/login', methods=['POST'])
+def customer_login():
+    """Login cliente"""
+    try:
+        data = request.json
+        
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email e password richiesti'}), 400
+        
+        # Login cliente
+        result, error = CustomerService.customer_login(email, password)
+        
+        if result:
+            return jsonify(result)
+        else:
+            return jsonify({'error': error}), 401
+            
+    except Exception as e:
+        print(f"Errore login cliente: {e}")
+        return jsonify({'error': 'Errore interno del server'}), 500
+
+@app.route('/api/customer/tickets', methods=['GET', 'POST'])
+@customer_token_required
+def customer_tickets():
+    """Gestione ticket del cliente autenticato"""
+    customer_id = request.current_customer['customer_id']
+    
+    if request.method == 'GET':
+        # Recupera solo i ticket del cliente corrente
+        try:
+            from task_helper import get_from_supabase
+            
+            tickets = get_from_supabase('tickets', 
+                                      filters={'customer_id': customer_id},
+                                      select='*',
+                                      order_by={'created_at': 'desc'})
+            return jsonify(tickets if tickets else [])
+        except Exception as e:
+            print(f"Errore nel recupero ticket cliente: {e}")
+            return jsonify({'error': 'Errore nel caricamento ticket'}), 500
+    
+    elif request.method == 'POST':
+        # Crea nuovo ticket per il cliente
+        try:
+            data = request.json
+            
+            # Verifica che il cliente possa creare ticket solo per se stesso
+            if data.get('customer_id') != customer_id:
+                return jsonify({'error': 'Non autorizzato'}), 403
+            
+            ticket_data = {
+                'title': data['title'],
+                'description': data['description'],
+                'priority': data.get('priority', 'Medium'),
+                'customer_id': customer_id,
+                'customer_email': request.current_customer['customer_email'],
+                'customer_name': request.current_customer['customer_name'],
+                'status': 'Open'
+            }
+            
+            new_ticket = TicketService.create(ticket_data)
+            if new_ticket:
+                # Invia notifica email per nuovo ticket
+                try:
+                    EmailService.send_new_ticket_notification(new_ticket)
+                except Exception as e:
+                    print(f"Errore nell'invio notifica email: {e}")
+                
+                return jsonify({'id': new_ticket['id'], 'message': 'Ticket creato con successo'})
+            else:
+                return jsonify({'error': 'Errore nella creazione del ticket'}), 500
+                
+        except Exception as e:
+            print(f"Errore creazione ticket cliente: {e}")
+            return jsonify({'error': 'Errore nella creazione del ticket'}), 500
+
+@app.route('/api/customer/tickets/<int:ticket_id>', methods=['GET'])
+@customer_token_required
+def customer_ticket_detail(ticket_id):
+    """Dettagli ticket specifico del cliente"""
+    try:
+        customer_id = request.current_customer['customer_id']
+        
+        # Verifica che il ticket appartenga al cliente
+        from task_helper import get_from_supabase
+        
+        tickets = get_from_supabase('tickets', 
+                                  filters={'id': ticket_id, 'customer_id': customer_id})
+        
+        if not tickets:
+            return jsonify({'error': 'Ticket non trovato'}), 404
+        
+        ticket = tickets[0]
+        
+        # Recupera anche i messaggi del ticket
+        messages = get_from_supabase('ticket_messages', 
+                                   filters={'ticket_id': ticket_id},
+                                   select='*',
+                                   order_by={'created_at': 'asc'})
+        
+        ticket['messages'] = messages if messages else []
+        
+        return jsonify(ticket)
+        
+    except Exception as e:
+        print(f"Errore nel recupero dettagli ticket: {e}")
+        return jsonify({'error': 'Errore nel caricamento dettagli'}), 500
+
+@app.route('/api/customer/tickets/<int:ticket_id>/messages', methods=['POST'])
+@customer_token_required
+def customer_add_message(ticket_id):
+    """Aggiunge messaggio del cliente al ticket"""
+    try:
+        customer_id = request.current_customer['customer_id']
+        
+        # Verifica che il ticket appartenga al cliente
+        from task_helper import get_from_supabase, save_to_supabase
+        
+        tickets = get_from_supabase('tickets', 
+                                  filters={'id': ticket_id, 'customer_id': customer_id})
+        
+        if not tickets:
+            return jsonify({'error': 'Ticket non trovato'}), 404
+        
+        data = request.json
+        message_data = {
+            'ticket_id': ticket_id,
+            'sender_type': 'customer',
+            'sender_name': request.current_customer['customer_name'],
+            'sender_email': request.current_customer['customer_email'],
+            'message_text': data['message_text'],
+            'is_internal': False
+        }
+        
+        result = save_to_supabase('ticket_messages', message_data)
+        
+        if result:
+            # Invia notifica agli agenti
+            ticket = tickets[0]
+            try:
+                EmailService.send_ticket_message_to_agents(ticket, result[0] if isinstance(result, list) else result)
+            except Exception as e:
+                print(f"Errore nell'invio notifica agenti: {e}")
+            
+            return jsonify({'message': 'Messaggio inviato con successo'})
+        else:
+            return jsonify({'error': 'Errore nell\'invio messaggio'}), 500
+            
+    except Exception as e:
+        print(f"Errore nell'aggiunta messaggio: {e}")
+        return jsonify({'error': 'Errore nell\'invio messaggio'}), 500
 
 # Health check endpoint
 @app.route('/health')
