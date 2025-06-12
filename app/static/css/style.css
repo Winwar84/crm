@@ -1380,6 +1380,22 @@ legend {
 
 /* ===== PAGE SPECIFIC LAYOUTS ===== */
 
+/* Stats containers layout */
+.dashboard-stats, .customers-stats {
+    display: flex;
+    gap: 20px;
+    margin: 30px;
+    flex-wrap: wrap;
+}
+
+/* Responsive behavior for stats */
+@media (max-width: 768px) {
+    .dashboard-stats, .customers-stats {
+        flex-direction: column;
+        margin: 20px;
+    }
+}
+
 /* Dashboard content layout */
 .dashboard-content {
     margin: 30px;

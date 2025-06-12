@@ -36,6 +36,9 @@ function sanitizeForAttribute(text) {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Close all modals immediately on page load
+    closeAllModals();
+    
     checkAuthentication();
     
     // Initialize theme system
@@ -48,6 +51,37 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', stopMessageAutoRefresh);
     window.addEventListener('pagehide', stopMessageAutoRefresh);
 });
+
+// Close all modals function
+function closeAllModals() {
+    console.log('🔄 Closing all modals on page load...');
+    
+    // List of all possible modal IDs across all pages
+    const modalIds = [
+        'editTicketModal',
+        'newTicketModal', 
+        'ticketDetailsModal',
+        'newCustomerModal',
+        'editCustomerModal',
+        'customerDetailsModal',
+        'newAgentModal',
+        'editAgentModal',
+        'agentDetailsModal',
+        'approveUserModal',
+        'emailSettingsModal',
+        'smtpSettingsModal',
+        'imapSettingsModal',
+        'testEmailModal'
+    ];
+    
+    modalIds.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.setProperty('display', 'none', 'important');
+            console.log(`✅ Closed modal: ${modalId}`);
+        }
+    });
+}
 
 // ===== THEME SYSTEM =====
 function initThemeSystem() {
