@@ -717,6 +717,27 @@ table tr:hover {
     background: rgba(0, 255, 255, 0.05);
 }
 
+/* ===== FIELDSET & LEGEND ===== */
+fieldset {
+    border: 1px solid var(--dark-border);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin: 0;
+    background: rgba(0, 255, 255, 0.02);
+}
+
+legend {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--dark-surface);
+    padding: 5px 12px;
+    border: 1px solid var(--dark-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
 /* ===== MODALS ===== */
 .modal {
     display: none;

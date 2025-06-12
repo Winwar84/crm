@@ -3,6 +3,27 @@ let allAgents = [];
 let filteredAgents = [];
 let agentTickets = {};
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 // Function to make authenticated requests
 async function fetchWithAuth(url, options = {}) {
     const token = localStorage.getItem('user_token');
@@ -156,22 +177,22 @@ function displayAgentsCards() {
                     <div class="agent-card-header">
                         <div class="agent-avatar">${initials}</div>
                         <div class="agent-info">
-                            <div class="agent-name">${agent.name}</div>
-                            <div class="agent-id">@${agent.username}</div>
+                            <div class="agent-name">${escapeHtml(agent.name)}</div>
+                            <div class="agent-id">@${escapeHtml(agent.username)}</div>
                         </div>
                         <div class="user-status ${statusClass}">
-                            ${agent.status}
+                            ${escapeHtml(agent.status)}
                         </div>
                     </div>
                     
                     <div class="agent-details">
                         <div class="agent-email">
                             <i class="fas fa-envelope"></i>
-                            <a href="mailto:${agent.email}">${agent.email}</a>
+                            <a href="mailto:${sanitizeForAttribute(agent.email)}">${escapeHtml(agent.email)}</a>
                         </div>
                         <div class="user-role ${roleClass}">
                             <i class="fas fa-user-tag"></i>
-                            ${agent.role}
+                            ${escapeHtml(agent.role)}
                         </div>
                     </div>
                     
@@ -209,18 +230,18 @@ function displayAgentsCards() {
                     <div class="agent-card-header">
                         <div class="agent-avatar">${initials}</div>
                         <div class="agent-info">
-                            <div class="agent-name">${agent.name}</div>
+                            <div class="agent-name">${escapeHtml(agent.name)}</div>
                             <div class="agent-id">ID: #${agent.id}</div>
                         </div>
                         <div class="agent-department ${departmentClass}">
-                            ${agent.department}
+                            ${escapeHtml(agent.department)}
                         </div>
                     </div>
                     
                     <div class="agent-details">
                         <div class="agent-email">
                             <i class="fas fa-envelope"></i>
-                            <a href="mailto:${agent.email}">${agent.email}</a>
+                            <a href="mailto:${sanitizeForAttribute(agent.email)}">${escapeHtml(agent.email)}</a>
                         </div>
                     </div>
                     
@@ -230,7 +251,7 @@ function displayAgentsCards() {
                             <div class="agent-stat-label">Ticket</div>
                         </div>
                         <div class="agent-stat">
-                            <div class="agent-stat-number">${calculateAgentWorkload(assignedTickets)}</div>
+                            <div class="agent-stat-number">${escapeHtml(calculateAgentWorkload(assignedTickets))}</div>
                             <div class="agent-stat-label">Carico</div>
                         </div>
                     </div>
@@ -412,15 +433,15 @@ function viewAgentDetails(agentId) {
                 <div class="detail-grid">
                     <div class="detail-item">
                         <label>Nome:</label>
-                        <span>${agent.name}</span>
+                        <span>${escapeHtml(agent.name)}</span>
                     </div>
                     <div class="detail-item">
                         <label>Email:</label>
-                        <span><a href="mailto:${agent.email}">${agent.email}</a></span>
+                        <span><a href="mailto:${sanitizeForAttribute(agent.email)}">${escapeHtml(agent.email)}</a></span>
                     </div>
                     <div class="detail-item">
                         <label>Dipartimento:</label>
-                        <span class="department-badge department-${agent.department}">${agent.department}</span>
+                        <span class="department-badge department-${sanitizeForAttribute(agent.department)}">${escapeHtml(agent.department)}</span>
                     </div>
                     <div class="detail-item">
                         <label>Ticket Assegnati:</label>
@@ -443,7 +464,7 @@ function viewAgentDetails(agentId) {
                 <button class="btn primary" onclick="openEditAgentModal(${agent.id}); closeModal('agentDetailsModal');">
                     <i class="fas fa-edit"></i> Modifica Agente
                 </button>
-                <button class="btn secondary" onclick="viewAgentTickets('${agent.name}')">
+                <button class="btn secondary" onclick="viewAgentTickets('${escapeHtml(agent.name)}')">
                     <i class="fas fa-ticket-alt"></i> Vedi Ticket
                 </button>
             </div>
@@ -519,7 +540,7 @@ function openUserPermissionsModal(userId) {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
-                            <i class="fas fa-user-cog"></i> Gestione Permessi - ${user.name}
+                            <i class="fas fa-user-cog"></i> Gestione Permessi - ${escapeHtml(user.name)}
                         </h5>
                         <button type="button" class="close" onclick="closeUserPermissionsModal()">
                             <span>&times;</span>
@@ -527,11 +548,11 @@ function openUserPermissionsModal(userId) {
                     </div>
                     <div class="modal-body">
                         <form id="userPermissionsForm">
-                            <input type="hidden" id="userId" value="${userId}">
+                            <input type="hidden" id="userPermissionsUserId" value="${sanitizeForAttribute(userId)}">
                             
                             <div class="form-group">
-                                <label for="userRole">Ruolo:</label>
-                                <select class="form-control" id="userRole" required>
+                                <label for="userPermissionsRole">Ruolo:</label>
+                                <select class="form-control" id="userPermissionsRole" required>
                                     <option value="operator" ${user.role === 'operator' ? 'selected' : ''}>Operatore</option>
                                     <option value="supervisor" ${user.role === 'supervisor' ? 'selected' : ''}>Supervisore</option>
                                     <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Amministratore</option>
@@ -539,8 +560,8 @@ function openUserPermissionsModal(userId) {
                             </div>
                             
                             <div class="form-group">
-                                <label for="userStatus">Stato:</label>
-                                <select class="form-control" id="userStatus" required>
+                                <label for="userPermissionsStatus">Stato:</label>
+                                <select class="form-control" id="userPermissionsStatus" required>
                                     <option value="approved" ${user.status === 'approved' ? 'selected' : ''}>Approvato</option>
                                     <option value="pending" ${user.status === 'pending' ? 'selected' : ''}>In Attesa</option>
                                     <option value="suspended" ${user.status === 'suspended' ? 'selected' : ''}>Sospeso</option>
@@ -549,8 +570,8 @@ function openUserPermissionsModal(userId) {
                             
                             <div class="form-group">
                                 <div class="user-info-display">
-                                    <p><strong>Username:</strong> ${user.username}</p>
-                                    <p><strong>Email:</strong> ${user.email}</p>
+                                    <p><strong>Username:</strong> ${escapeHtml(user.username)}</p>
+                                    <p><strong>Email:</strong> ${escapeHtml(user.email)}</p>
                                     <p><strong>Registrato:</strong> ${formatDate(user.created_at)}</p>
                                     <p><strong>Ultimo Login:</strong> ${user.last_login ? formatDate(user.last_login) : 'Mai'}</p>
                                 </div>
@@ -579,9 +600,9 @@ function closeUserPermissionsModal() {
 
 // Update user permissions
 async function updateUserPermissions() {
-    const userId = document.getElementById('userId').value;
-    const role = document.getElementById('userRole').value;
-    const status = document.getElementById('userStatus').value;
+    const userId = document.getElementById('userPermissionsUserId').value;
+    const role = document.getElementById('userPermissionsRole').value;
+    const status = document.getElementById('userPermissionsStatus').value;
     
     try {
         const response = await fetchWithAuth(`${API_BASE}/auth/users/${userId}/permissions`, {

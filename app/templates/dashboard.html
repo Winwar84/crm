@@ -157,17 +157,19 @@
                         
                         <div class="customer-selection">
                             <div class="form-group">
-                                <label>Tipo Cliente:</label>
-                                <div class="customer-choice">
-                                    <label class="radio-option">
-                                        <input type="radio" name="customerType" value="existing" checked onchange="toggleCustomerType()">
-                                        <span>Cliente esistente</span>
-                                    </label>
-                                    <label class="radio-option">
-                                        <input type="radio" name="customerType" value="new" onchange="toggleCustomerType()">
-                                        <span>Nuovo cliente</span>
-                                    </label>
-                                </div>
+                                <fieldset>
+                                    <legend>Tipo Cliente:</legend>
+                                    <div class="customer-choice">
+                                        <label class="radio-option" for="customerTypeExisting">
+                                            <input type="radio" id="customerTypeExisting" name="customerType" value="existing" checked onchange="toggleCustomerType()">
+                                            <span>Cliente esistente</span>
+                                        </label>
+                                        <label class="radio-option" for="customerTypeNew">
+                                            <input type="radio" id="customerTypeNew" name="customerType" value="new" onchange="toggleCustomerType()">
+                                            <span>Nuovo cliente</span>
+                                        </label>
+                                    </div>
+                                </fieldset>
                             </div>
                             
                             <div id="existingCustomerSection">
@@ -388,7 +390,7 @@
                                     <div class="message-input-group">
                                         <textarea id="messageText" placeholder="Scrivi un messaggio..." rows="3" required></textarea>
                                         <div class="message-controls">
-                                            <label class="internal-note-checkbox">
+                                            <label class="internal-note-checkbox" for="isInternalMessage">
                                                 <input type="checkbox" id="isInternalMessage">
                                                 <span>Nota interna (solo agenti)</span>
                                             </label>

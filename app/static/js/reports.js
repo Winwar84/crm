@@ -4,6 +4,27 @@ if (typeof exports === 'undefined') {
     var exports = {};
 }
 
+// ===== SECURITY FUNCTIONS =====
+function escapeHtml(text) {
+    if (text == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function sanitizeForAttribute(text) {
+    if (text == null) return '';
+    return String(text).replace(/[<>"'&]/g, function(match) {
+        return {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '&': '&amp;'
+        }[match];
+    });
+}
+
 let reportPeriod = 30;
 let charts = {};
 let reportData = {};
@@ -490,7 +511,7 @@ function renderWorkloadHeatmap() {
         heatmapHTML += `<div class="heatmap-cell day-label">${day}</div>`;
         hours.forEach(() => {
             const intensity = Math.floor(Math.random() * 5);
-            heatmapHTML += `<div class="heatmap-cell data-cell intensity-${intensity}" title="${day} - Carico: ${intensity}"></div>`;
+            heatmapHTML += `<div class="heatmap-cell data-cell intensity-${intensity}" title="${escapeHtml(day)} - Carico: ${intensity}"></div>`;
         });
         heatmapHTML += '</div>';
     });
@@ -521,11 +542,11 @@ function renderTopAgentsTable() {
 
     tbody.innerHTML = agentStats.map(agent => `
         <tr>
-            <td>${agent.name}</td>
+            <td>${escapeHtml(agent.name)}</td>
             <td><span class="metric-badge">${agent.resolved}</span></td>
-            <td>${agent.avgTime}</td>
-            <td><span class="rating-badge">${agent.rating}</span></td>
-            <td><span class="efficiency-badge">${agent.efficiency}</span></td>
+            <td>${escapeHtml(agent.avgTime)}</td>
+            <td><span class="rating-badge">${escapeHtml(agent.rating)}</span></td>
+            <td><span class="efficiency-badge">${escapeHtml(agent.efficiency)}</span></td>
         </tr>
     `).join('');
 }
@@ -544,11 +565,11 @@ function renderRecurringIssuesTable() {
 
     tbody.innerHTML = mockIssues.map(issue => `
         <tr>
-            <td>${issue.problem}</td>
+            <td>${escapeHtml(issue.problem)}</td>
             <td><span class="count-badge">${issue.count}</span></td>
-            <td>${issue.avgTime}</td>
-            <td><span class="impact-badge impact-${issue.impact.toLowerCase()}">${issue.impact}</span></td>
-            <td><span class="trend-badge ${issue.trend.startsWith('+') ? 'positive' : 'negative'}">${issue.trend}</span></td>
+            <td>${escapeHtml(issue.avgTime)}</td>
+            <td><span class="impact-badge impact-${sanitizeForAttribute(issue.impact.toLowerCase())}">${escapeHtml(issue.impact)}</span></td>
+            <td><span class="trend-badge ${issue.trend.startsWith('+') ? 'positive' : 'negative'}">${escapeHtml(issue.trend)}</span></td>
         </tr>
     `).join('');
 }
