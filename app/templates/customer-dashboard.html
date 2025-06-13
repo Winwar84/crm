@@ -713,7 +713,24 @@
         let currentCustomer = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Customer Dashboard v2.7.1 loaded');
+            console.log('🚀 Customer Dashboard v2.8.1 loaded');
+            
+            // DISABLE ADMIN SYSTEMS for customer dashboard
+            if (typeof sessionProtected !== 'undefined') {
+                sessionProtected = false;
+                console.log('🔓 Logout protection disabled for customer dashboard');
+            }
+            
+            // Override admin authentication functions
+            window.checkAuthentication = function() {
+                console.log('⚠️ Admin authentication disabled for customer dashboard');
+                return Promise.resolve();
+            };
+            
+            window.verifyToken = function() {
+                console.log('⚠️ Admin token verification disabled for customer dashboard');
+                return Promise.resolve();
+            };
             
             // Theme initialization with fallback
             if (typeof initThemeSystem === 'function') {
@@ -1141,7 +1158,7 @@
                     refreshTicketMessages(ticketId);
                 } else {
                     const result = await response.json();
-                    showNotification(result.error || 'Errore nell\\'invio del messaggio', 'error');
+                    showNotification(result.error || 'Errore nell\'invio del messaggio', 'error');
                 }
             } catch (error) {
                 showNotification('Errore di connessione', 'error');
@@ -1191,10 +1208,17 @@
         }
 
         function logout() {
+            console.log('🚪 Customer logout initiated');
             localStorage.removeItem('customer_token');
             localStorage.removeItem('customer_data');
+            // Also clear any admin tokens that might be present
+            localStorage.removeItem('user_token');
+            localStorage.removeItem('current_user');
             window.location.href = '/customer-login';
         }
+        
+        // Override global logout function for customer dashboard
+        window.logout = logout;
 
         function formatDate(dateString) {
             const date = new Date(dateString);
