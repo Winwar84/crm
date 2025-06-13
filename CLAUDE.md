@@ -1,4 +1,4 @@
-# CRM Pro v2.7 - Cyberpunk Command Center
+# CRM Pro v2.8 - Cyberpunk Command Center
 
 ## 🚀 Quick Start
 ```bash
@@ -69,13 +69,28 @@ docker restart crm-pro
 - **Console Monitoring**: Rilevamento manipolazioni JavaScript sospette
 - **UX Sicuro**: Escape key, focus management, animazioni fluide
 
+### 👤 **NEW: Sistema Clienti Completo**
+- **Customer Portal**: Dashboard dedicata clienti con autenticazione separata
+- **Customer Registration**: Registrazione clienti con campi obbligatori (nome, azienda)
+- **Customer Login**: Sistema login JWT separato per clienti
+- **Ticket Creation**: Clienti possono creare ticket che appaiono in assistenza
+- **Real-time Chat**: Chat bidirezionale cliente-agente con email notifications
+- **Ticket Management**: Visualizzazione e filtro ticket del cliente
+- **Auto-refresh**: Aggiornamento automatico ticket ogni 30 secondi
+- **Mobile Responsive**: Interface ottimizzata per dispositivi mobili
+
 ## 📊 Database Schema
 
 ### Core Tables
 - `tickets` - Ticket con campi estesi (software, gruppo, tipo, assistenza)
-- `customers` - Anagrafica clienti
+- `customers` - Anagrafica clienti con autenticazione (password hash in notes)
 - `agents` - Agenti con dipartimenti
-- `users` - Sistema autenticazione JWT
+- `users` - Sistema autenticazione JWT staff
+
+### Customer System
+- `customers` - Clienti con campi: name, email, company, phone, address, status
+- Customer authentication usa campo `notes` per password hash (workaround)
+- JWT tokens separati per clienti vs staff
 
 ### Chat System
 - `ticket_messages` - Messaggi conversazione ticket
@@ -103,6 +118,16 @@ PUT    /api/tickets/{id}/messages/{msgId}  # Modifica messaggio
 DELETE /api/tickets/{id}/messages/{msgId}  # Elimina messaggio
 ```
 
+### API Endpoints Cliente
+```
+POST   /api/auth/customer/register    # Registrazione cliente
+POST   /api/auth/customer/login       # Login cliente
+GET    /api/customer/tickets          # Lista ticket cliente
+POST   /api/customer/tickets          # Crea nuovo ticket cliente
+GET    /api/customer/tickets/{id}     # Dettagli ticket con messaggi
+POST   /api/customer/tickets/{id}/messages  # Aggiungi messaggio cliente
+```
+
 ### Interfaccia Chat
 - **Header**: Gradient blu con controlli refresh
 - **Messaggi**: Bubble chat (blu=agenti, viola=clienti, arancio=interni)
@@ -125,6 +150,8 @@ docker restart crm-pro             # Restart if needed
 - **Email Issues**: Check SMTP/IMAP config in settings
 - **MCP Email**: Use `task_helper.py` for email settings operations
 - **Password Save**: Email passwords now persist via MCP Supabase
+- **Customer Issues**: Check customer authentication tokens, clear localStorage conflicts
+- **Customer Modal**: Ensure `newTicketModal` element exists with proper CSS styling
 - **Theme Issues**: Check `data-theme` attribute on document element
 - **Particles Not Loading**: Verify `initCyberpunkEffects()` called on page load
 
@@ -135,9 +162,22 @@ docker restart crm-pro             # Restart if needed
 - **Theme Toggle**: Check localStorage for 'crm-theme' key
 - **Animations**: Verify CSS animations working and particles container exists
 
-## 🎯 Latest Updates (2025-06-12)
+## 🎯 Latest Updates (2025-06-13)
 
-### v2.6 Performance & UX Overhaul - TODAY! 🔥
+### v2.8 Customer Portal System - NEW! 🎫
+✅ **Complete Customer Dashboard**: Portal clienti autonomo con autenticazione separata
+✅ **Customer Registration**: Registrazione clienti con validazione campi obbligatori (nome, azienda)
+✅ **Customer Authentication**: Sistema JWT separato per clienti vs admin
+✅ **Ticket Creation Fixed**: Risolto problema creazione ticket - modal si apre correttamente
+✅ **Real-time Chat**: Sistema chat bidirezionale cliente-agente con email notifications
+✅ **Ticket Management**: Dashboard clienti con visualizzazione, filtro e gestione ticket
+✅ **Auto-refresh System**: Aggiornamento automatico ticket every 30 secondi
+✅ **Responsive Design**: Interface ottimizzata mobile e desktop
+✅ **Debug System**: Logging completo per troubleshooting customer issues
+✅ **Session Management**: Separazione clean tra sessioni admin e customer
+✅ **Modal System Enhanced**: CSS inline styling per garantire visibilità modal
+
+### v2.7 Performance & UX Overhaul - STABLE 🔥
 ✅ **Modal System Fix**: Risolto problema modali che si aprivano automaticamente all'avvio
 ✅ **Theme Toggle Fix**: Corretto conflitto doppia chiamata - sistema dark/light mode perfetto
 ✅ **Inline Editing Fix**: Modal modifica ticket si chiude correttamente dopo salvataggio 
@@ -324,5 +364,43 @@ performSecureLogout()    // Logout sicuro finale
 **❌ BLOCCATI**: Refresh, back button, chiusura tab, localStorage manipulation, console hacks  
 **✅ CONSENTITO**: Solo pulsante logout ufficiale con conferma modal
 
+## 👤 Customer Portal - Come Funziona
+
+### Workflow Cliente
+1. **Registrazione**: Cliente si registra con nome, email, azienda (campi obbligatori)
+2. **Login**: Autenticazione JWT separata da admin, token salvato in `customer_token`
+3. **Dashboard**: Portal dedicato con statistiche ticket e accesso funzioni
+4. **Crea Ticket**: Modal per creazione ticket che appaiono in sezione assistenza admin
+5. **Chat Real-time**: Comunicazione bidirezionale con agenti tramite messaggi
+
+### Funzioni Customer Dashboard
+- **Ticket Creation**: Form completo con titolo, descrizione, priorità
+- **Ticket List**: Grid view con filtri per stato (Open, In Progress, Resolved, Closed)
+- **Ticket Details**: Modal con dettagli completi e sistema chat integrato
+- **Stats Display**: Contatori real-time (totali, aperti, risolti)
+- **Auto-refresh**: Update automatico ogni 30 secondi
+
+### Customer Authentication
+```javascript
+// Customer login
+localStorage.setItem('customer_token', token);
+localStorage.setItem('customer_data', JSON.stringify(customer));
+
+// API calls con customer token
+headers: { 'Authorization': `Bearer ${customerToken}` }
+```
+
+### URLs Customer Portal
+```
+/customer-login          # Login/registrazione clienti
+/customer-dashboard      # Dashboard clienti autenticati
+```
+
+### Troubleshooting Customer Portal
+- **Modal non si apre**: Check console per errori, verify `newTicketModal` element
+- **Token issues**: Clear localStorage conflicts between admin/customer sessions
+- **API 401 errors**: Verify customer token validity with `/api/auth/verify`
+- **Chat not loading**: Check customer_id matching in ticket ownership
+
 ---
-*CRM Pro v2.7 - Cyberpunk Command Center con Sistema Protezione Logout Avanzata* 🛡️
+*CRM Pro v2.8 - Cyberpunk Command Center con Customer Portal Completo* 🎫👤🛡️
