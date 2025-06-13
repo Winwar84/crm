@@ -485,27 +485,46 @@ function initCyberpunkEffects() {
     initSoundEffects();
     initSystemHUD();
     initCyberClock();
+    debugIntervals(); // Enable debugging of 15-second intervals to prevent flickering
 }
 
-// Create floating particles background
+// Create floating particles background (optimized)
 function createFloatingParticles() {
+    // Check user preference for reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return; // Skip particles for users who prefer reduced motion
+    }
+    
     const particlesContainer = document.createElement('div');
     particlesContainer.className = 'particles';
+    particlesContainer.style.opacity = '0.3'; // Reduce opacity to be less distracting
     document.body.appendChild(particlesContainer);
     
-    // Create 50 particles
-    for (let i = 0; i < 50; i++) {
+    // Reduce to only 15 particles (was 50)
+    for (let i = 0; i < 15; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
         // Random positioning
         particle.style.left = Math.random() * 100 + '%';
         particle.style.top = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 6 + 's';
-        particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+        particle.style.animationDelay = Math.random() * 8 + 's'; // Slower start
+        particle.style.animationDuration = (8 + Math.random() * 6) + 's'; // Slower animation
         
         particlesContainer.appendChild(particle);
     }
+}
+
+// Debug function to catch unwanted intervals
+function debugIntervals() {
+    const originalSetInterval = window.setInterval;
+    window.setInterval = function(callback, delay, ...args) {
+        if (delay === 15000 || delay === 15 * 1000) {
+            console.warn('🚨 15-second interval detected:', callback.toString().substring(0, 100));
+            console.trace();
+        }
+        return originalSetInterval.call(this, callback, delay, ...args);
+    };
 }
 
 // Enhanced loading animations
@@ -3020,20 +3039,21 @@ function startMessageAutoRefresh(ticketId) {
     // Set current ticket ID
     currentTicketId = ticketId;
     
-    // Start new interval - check every 30 seconds (further reduced frequency to prevent conflicts)
+    // Start new interval - check every 60 seconds (reduced to prevent dashboard flickering)
     autoRefreshInterval = setInterval(() => {
         if (currentTicketId === ticketId && document.getElementById('ticketDetailsModal').style.display === 'block') {
             // Only refresh if modal is still open and not being edited
             const isEditing = document.getElementById('editableTicketDetailsForm');
             if (!isEditing) {
+                console.log(`🔄 Caricamento messaggi ticket ${ticketId} per auto-refresh`);
                 loadTicketMessages(ticketId);
             }
         } else {
             stopMessageAutoRefresh();
         }
-    }, 15000);
+    }, 60000);
     
-    console.log(`🔄 Auto-refresh avviato per ticket ${ticketId} (ogni 15 secondi)`);
+    console.log(`🔄 Auto-refresh avviato per ticket ${ticketId} (ogni 60 secondi)`);
 }
 
 function stopMessageAutoRefresh() {

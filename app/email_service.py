@@ -1229,10 +1229,10 @@ class EmailMonitor:
                     EmailService.check_emails_and_create_tickets()
                     time.sleep(config['auto_check'])
                 else:
-                    time.sleep(15)  # Controlla ogni 15 secondi se il servizio è attivo
+                    time.sleep(60)  # Controlla ogni 60 secondi se il servizio è attivo (era 15)
             except Exception as e:
                 print(f"Errore nel monitor email: {e}")
-                time.sleep(15)
+                time.sleep(60)  # Ridotto spam di errori (era 15)
 
 # Istanza globale del monitor
 email_monitor = EmailMonitor()
