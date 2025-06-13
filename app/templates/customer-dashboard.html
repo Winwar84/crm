@@ -715,21 +715,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Customer Dashboard v2.8.1 loaded');
             
-            // DISABLE ADMIN SYSTEMS for customer dashboard
-            if (typeof sessionProtected !== 'undefined') {
-                sessionProtected = false;
-                console.log('🔓 Logout protection disabled for customer dashboard');
-            }
+            // CUSTOMER NAMESPACE ISOLATION
+            window.CUSTOMER_MODE = true;
+            console.log('👤 Customer mode activated - isolated from admin functions');
             
-            // Override admin authentication functions
-            window.checkAuthentication = function() {
-                console.log('⚠️ Admin authentication disabled for customer dashboard');
-                return Promise.resolve();
+            // Create customer-specific storage namespace
+            window.customerStorage = {
+                get: function(key) {
+                    return localStorage.getItem('customer_' + key);
+                },
+                set: function(key, value) {
+                    localStorage.setItem('customer_' + key, value);
+                },
+                remove: function(key) {
+                    localStorage.removeItem('customer_' + key);
+                }
             };
             
-            window.verifyToken = function() {
-                console.log('⚠️ Admin token verification disabled for customer dashboard');
-                return Promise.resolve();
+            // Isolate customer functions from admin interference
+            window.customerAuth = {
+                getToken: () => customerStorage.get('token'),
+                getUser: () => {
+                    const userData = customerStorage.get('data');
+                    return userData ? JSON.parse(userData) : null;
+                },
+                isAuthenticated: () => !!(customerStorage.get('token') && customerStorage.get('data'))
             };
             
             // Theme initialization with fallback
