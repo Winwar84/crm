@@ -110,6 +110,17 @@ def customer_login_page():
 def customer_dashboard_page():
     return render_template('customer-dashboard.html')
 
+# Favicon routes
+@app.route('/favicon.ico')
+def favicon():
+    from flask import send_from_directory
+    return send_from_directory(app.static_folder, 'favicon.ico')
+
+@app.route('/favicon.svg')
+def favicon_svg():
+    from flask import send_from_directory
+    return send_from_directory(app.static_folder, 'favicon.svg')
+
 @app.route('/api/tickets', methods=['GET', 'POST'])
 @token_required
 def api_tickets():
@@ -1184,11 +1195,17 @@ def customer_register():
     try:
         data = request.json
         
-        # Validazione dati
-        required_fields = ['name', 'email', 'password']
+        # Validazione dati obbligatori
+        required_fields = ['name', 'email', 'password', 'company']
         for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'Campo {field} richiesto'}), 400
+            if not data.get(field) or not data.get(field).strip():
+                field_names = {
+                    'name': 'Nome completo',
+                    'email': 'Email', 
+                    'password': 'Password',
+                    'company': 'Azienda'
+                }
+                return jsonify({'error': f'Campo {field_names.get(field, field)} richiesto'}), 400
         
         if len(data['password']) < 6:
             return jsonify({'error': 'La password deve essere di almeno 6 caratteri'}), 400

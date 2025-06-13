@@ -170,25 +170,28 @@ class CustomerService:
             # Hash della password
             password_hash = bcrypt.hashpw(customer_data['password'].encode('utf-8'), bcrypt.gensalt())
             
-            # Prepara dati cliente
-            new_customer_data = {
+            # Salva la password hash nelle note del cliente per ora (workaround)
+            notes_with_auth = customer_data.get('notes', '') + f"\n__AUTH_HASH__{password_hash.decode('utf-8')}__AUTH_END__"
+            
+            customer_data_with_auth = {
                 'name': customer_data['name'],
                 'email': customer_data['email'],
                 'phone': customer_data.get('phone', ''),
                 'company': customer_data.get('company', ''),
                 'address': customer_data.get('address', ''),
-                'notes': customer_data.get('notes', ''),
-                'status': 'Active',
-                'password_hash': password_hash.decode('utf-8'),
-                'can_login': True
+                'notes': notes_with_auth,
+                'status': 'Active'
             }
             
-            result = save_to_supabase('customers', new_customer_data)
+            # Salva il cliente
+            result = save_to_supabase('customers', customer_data_with_auth)
             
             if result:
                 customer = result[0] if isinstance(result, list) else result
-                # Non restituire la password hash
-                customer.pop('password_hash', None)
+                # Rimuovi l'hash dalle note nella risposta
+                if 'notes' in customer:
+                    customer['notes'] = customer_data.get('notes', '')
+                
                 return customer, None
             return None, "Errore nella registrazione"
             
@@ -205,26 +208,32 @@ class CustomerService:
             
             # Cerca cliente per email
             customers = get_from_supabase('customers', 
-                                        filters={'email': email, 'status': 'Active', 'can_login': True})
+                                        filters={'email': email, 'status': 'Active'})
             
             if not customers:
                 return None, "Credenziali non valide"
             
             customer = customers[0]
             
-            # Verifica password
-            if not customer.get('password_hash'):
+            # Estrai password hash dalle note (workaround)
+            notes = customer.get('notes', '')
+            password_hash = None
+            
+            import re
+            hash_match = re.search(r'__AUTH_HASH__(.+?)__AUTH_END__', notes)
+            if hash_match:
+                password_hash = hash_match.group(1)
+                # Rimuovi l'hash dalle note per la risposta
+                customer['notes'] = re.sub(r'\n?__AUTH_HASH__.+?__AUTH_END__', '', notes)
+            
+            if not password_hash:
                 return None, "Account non configurato per il login"
             
-            if bcrypt.checkpw(password.encode('utf-8'), customer['password_hash'].encode('utf-8')):
+            if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
                 # Login riuscito - genera token
                 token = UserService.generate_customer_token(customer)
                 
-                # Rimuovi password hash dalla risposta
-                customer_data = customer.copy()
-                customer_data.pop('password_hash', None)
-                
-                return {'customer': customer_data, 'token': token}, None
+                return {'customer': customer, 'token': token}, None
             else:
                 return None, "Credenziali non valide"
                 
