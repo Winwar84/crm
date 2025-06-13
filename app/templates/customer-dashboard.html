@@ -46,7 +46,7 @@
                     <h2>👋 Benvenuto nella tua Area Clienti</h2>
                     <p>Gestisci i tuoi ticket di supporto e richiedi assistenza</p>
                 </div>
-                <button id="newTicketBtn" class="new-ticket-btn">
+                <button id="newTicketBtn" class="new-ticket-btn" onclick="openNewTicketModal()">
                     🎫 Nuovo Ticket
                 </button>
             </div>
@@ -115,8 +115,8 @@
     </div>
 
     <!-- New Ticket Modal -->
-    <div id="newTicketModal" class="modal" style="display: none;">
-        <div class="modal-content large">
+    <div id="newTicketModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+        <div class="modal-content large" style="background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
                 <h2>🎫 Nuovo Ticket di Supporto</h2>
                 <button class="modal-close" onclick="closeNewTicketModal()">&times;</button>
@@ -467,6 +467,215 @@
             margin-top: 15px;
         }
 
+        /* Ticket Detail Modal Styles */
+        .ticket-detail-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .ticket-detail-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .ticket-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ticket-detail-row .label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 80px;
+        }
+        
+        .ticket-detail-description {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .ticket-detail-description h4 {
+            margin: 0 0 15px 0;
+            color: var(--text-primary);
+        }
+        
+        .ticket-detail-description p {
+            margin: 0;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        /* Chat Section Styles */
+        .ticket-chat-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .chat-header h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .refresh-chat-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-chat-btn:hover {
+            background: var(--neon-cyan);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .no-messages {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 40px 20px;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .customer-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .agent-message {
+            align-self: flex-start;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 15px;
+        }
+        
+        .sender-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .message-text {
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* Chat Input Section */
+        .chat-input-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        .message-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message-form textarea {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.4;
+            resize: vertical;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+        
+        .message-form textarea:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            background: rgba(0, 255, 255, 0.05);
+        }
+        
+        .send-message-btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-end;
+        }
+        
+        .send-message-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+        }
+        
+        .send-message-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         @media (max-width: 768px) {
             .customer-nav {
                 flex-direction: column;
@@ -483,6 +692,18 @@
             .customer-stats {
                 grid-template-columns: 1fr;
             }
+            
+            .ticket-detail-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .message-bubble {
+                max-width: 95%;
+            }
+            
+            .ticket-chat-section {
+                height: 400px;
+            }
         }
     </style>
 
@@ -492,30 +713,85 @@
         let currentCustomer = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            initTheme();
-            initCyberpunkEffects();
+            console.log('🚀 Customer Dashboard v2.7.1 loaded');
+            
+            // Theme initialization with fallback
+            if (typeof initThemeSystem === 'function') {
+                initThemeSystem();
+            } else if (typeof initTheme === 'function') {
+                console.warn('⚠️ Using fallback initTheme function');
+                initTheme();
+            } else {
+                console.error('❌ No theme initialization function found');
+            }
+            
+            // Initialize effects and dashboard
+            if (typeof initCyberpunkEffects === 'function') {
+                initCyberpunkEffects();
+            }
+            
             initCustomerDashboard();
         });
 
         function initCustomerDashboard() {
-            // Check authentication
+            console.log('🚀 Initializing customer dashboard...');
+            
+            // Clear any admin session first
+            const adminToken = localStorage.getItem('user_token');
+            if (adminToken) {
+                console.log('⚠️ Admin session detected, clearing...');
+                localStorage.removeItem('user_token');
+                localStorage.removeItem('current_user');
+            }
+            
+            // Check customer authentication
             const token = localStorage.getItem('customer_token');
             const customerData = localStorage.getItem('customer_data');
             
+            console.log('🔑 Customer token present:', !!token);
+            console.log('👤 Customer data present:', !!customerData);
+            
             if (!token || !customerData) {
+                console.log('❌ Missing customer authentication, redirecting to login');
                 window.location.href = '/customer-login';
                 return;
             }
             
-            currentCustomer = JSON.parse(customerData);
+            try {
+                currentCustomer = JSON.parse(customerData);
+                console.log('✅ Customer loaded:', {
+                    id: currentCustomer.id,
+                    name: currentCustomer.name,
+                    email: currentCustomer.email
+                });
+            } catch (error) {
+                console.error('❌ Error parsing customer data:', error);
+                window.location.href = '/customer-login';
+                return;
+            }
+            
             updateCustomerInfo();
             loadCustomerTickets();
             
             // Setup event listeners
-            document.getElementById('newTicketBtn').addEventListener('click', openNewTicketModal);
+            const newTicketBtn = document.getElementById('newTicketBtn');
+            if (newTicketBtn) {
+                console.log('✅ New ticket button found, adding event listener');
+                newTicketBtn.addEventListener('click', openNewTicketModal);
+            } else {
+                console.error('❌ New ticket button not found!');
+            }
+            
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('statusFilter').addEventListener('change', filterTickets);
             document.getElementById('newTicketForm').addEventListener('submit', submitNewTicket);
+            
+            // Auto-refresh tickets every 30 seconds
+            setInterval(() => {
+                loadCustomerTickets();
+            }, 30000);
+            
+            console.log('✅ Customer dashboard initialized successfully');
         }
 
         function updateCustomerInfo() {
@@ -524,27 +800,36 @@
         }
 
         async function loadCustomerTickets() {
+            console.log('📊 Loading customer tickets...');
             try {
                 const token = localStorage.getItem('customer_token');
+                console.log('🔑 Token for tickets request:', token ? 'Present' : 'Missing');
+                
                 const response = await fetch('/api/customer/tickets', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
+                console.log('📡 Tickets response status:', response.status);
+                
                 if (response.ok) {
                     const tickets = await response.json();
+                    console.log('🎫 Loaded tickets:', tickets.length);
                     displayTickets(tickets);
                     updateStats(tickets);
                 } else {
                     if (response.status === 401) {
+                        console.log('❌ Unauthorized, logging out');
                         logout();
                         return;
                     }
-                    throw new Error('Errore nel caricamento ticket');
+                    const errorData = await response.json();
+                    console.error('❌ Tickets loading failed:', errorData);
+                    throw new Error(errorData.error || 'Errore nel caricamento ticket');
                 }
             } catch (error) {
-                console.error('Error loading tickets:', error);
+                console.error('💥 Error loading tickets:', error);
                 showNotification('Errore nel caricamento dei ticket', 'error');
             } finally {
                 document.getElementById('ticketsLoading').style.display = 'none';
@@ -616,7 +901,17 @@
         }
 
         function openNewTicketModal() {
-            document.getElementById('newTicketModal').style.display = 'flex';
+            console.log('🎫 Opening new ticket modal...');
+            const modal = document.getElementById('newTicketModal');
+            if (modal) {
+                console.log('✅ Modal element found');
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                console.log('✅ Modal display set to flex');
+            } else {
+                console.error('❌ Modal element not found!');
+            }
         }
 
         function closeNewTicketModal() {
@@ -626,20 +921,36 @@
 
         async function submitNewTicket(e) {
             e.preventDefault();
+            console.log('🎫 Submitting new ticket...');
             
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
+            console.log('📋 Form data:', data);
+            
+            // Validate required fields
+            if (!data.title || !data.description) {
+                showNotification('Titolo e descrizione sono obbligatori', 'error');
+                return;
+            }
             
             // Add customer info
             data.customer_id = currentCustomer.id;
             data.customer_email = currentCustomer.email;
             data.customer_name = currentCustomer.name;
             
+            console.log('👤 Customer data added:', {
+                customer_id: data.customer_id,
+                customer_email: data.customer_email,
+                customer_name: data.customer_name
+            });
+            
             const submitBtn = document.getElementById('submitTicketBtn');
             toggleButtonLoading(submitBtn, true);
             
             try {
                 const token = localStorage.getItem('customer_token');
+                console.log('🔑 Using token:', token ? 'Present' : 'Missing');
+                
                 const response = await fetch('/api/customer/tickets', {
                     method: 'POST',
                     headers: {
@@ -649,14 +960,188 @@
                     body: JSON.stringify(data)
                 });
                 
+                console.log('📡 Response status:', response.status);
                 const result = await response.json();
+                console.log('📥 Response data:', result);
                 
                 if (response.ok) {
                     showNotification('Ticket creato con successo!', 'success');
                     closeNewTicketModal();
                     loadCustomerTickets(); // Reload tickets
                 } else {
+                    console.error('❌ Ticket creation failed:', result);
                     showNotification(result.error || 'Errore nella creazione del ticket', 'error');
+                }
+            } catch (error) {
+                console.error('💥 Network error:', error);
+                showNotification('Errore di connessione', 'error');
+            } finally {
+                toggleButtonLoading(submitBtn, false);
+            }
+        }
+
+        async function openTicketDetail(ticketId) {
+            try {
+                const token = localStorage.getItem('customer_token');
+                const response = await fetch(`/api/customer/tickets/${ticketId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const ticket = await response.json();
+                    displayTicketDetail(ticket);
+                    document.getElementById('ticketDetailModal').style.display = 'flex';
+                } else {
+                    if (response.status === 401) {
+                        logout();
+                        return;
+                    }
+                    throw new Error('Errore nel caricamento dettagli ticket');
+                }
+            } catch (error) {
+                console.error('Error loading ticket details:', error);
+                showNotification('Errore nel caricamento dei dettagli del ticket', 'error');
+            }
+        }
+        
+        function displayTicketDetail(ticket) {
+            const modal = document.getElementById('ticketDetailModal');
+            const titleEl = document.getElementById('ticketDetailTitle');
+            const contentEl = modal.querySelector('.ticket-detail-content');
+            
+            titleEl.textContent = `Ticket #${ticket.id} - ${ticket.title}`;
+            
+            const statusClass = `status-${ticket.status.toLowerCase().replace(' ', '-')}`;
+            const priorityClass = `priority-${ticket.priority.toLowerCase()}`;
+            
+            contentEl.innerHTML = `
+                <div class="ticket-detail-header">
+                    <div class="ticket-detail-info">
+                        <div class="ticket-detail-row">
+                            <span class="label">ID:</span>
+                            <span class="ticket-id">#${ticket.id}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="label">Stato:</span>
+                            <span class="ticket-status ${statusClass}">${ticket.status}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="label">Priorità:</span>
+                            <span class="priority ${priorityClass}">${ticket.priority}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span class="label">Creato:</span>
+                            <span>${formatDate(ticket.created_at)}</span>
+                        </div>
+                        ${ticket.assigned_to ? `
+                        <div class="ticket-detail-row">
+                            <span class="label">Assegnato a:</span>
+                            <span>${ticket.assigned_to}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="ticket-detail-description">
+                    <h4>Descrizione</h4>
+                    <p>${escapeHtml(ticket.description)}</p>
+                </div>
+                
+                <div class="ticket-chat-section">
+                    <div class="chat-header">
+                        <h4>💬 Conversazione</h4>
+                        <button onclick="refreshTicketMessages(${ticket.id})" class="refresh-chat-btn">
+                            🔄 Aggiorna
+                        </button>
+                    </div>
+                    
+                    <div class="chat-messages" id="ticketMessages">
+                        ${ticket.messages && ticket.messages.length > 0 ? 
+                          ticket.messages.map(msg => createMessageBubble(msg)).join('') :
+                          '<div class="no-messages">Nessun messaggio ancora. Inizia la conversazione!</div>'
+                        }
+                    </div>
+                    
+                    <div class="chat-input-section">
+                        <form onsubmit="sendCustomerMessage(event, ${ticket.id})" class="message-form">
+                            <textarea id="messageText" placeholder="Scrivi il tuo messaggio..." 
+                                     required rows="3" maxlength="1000"></textarea>
+                            <button type="submit" class="send-message-btn">
+                                <span class="btn-text">📤 Invia</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="spinner"></span> Invio...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // Scroll to latest message
+            setTimeout(() => {
+                const messagesContainer = document.getElementById('ticketMessages');
+                if (messagesContainer && messagesContainer.scrollHeight > messagesContainer.clientHeight) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }, 100);
+        }
+        
+        function createMessageBubble(message) {
+            const isCustomer = message.sender_type === 'customer';
+            const bubbleClass = isCustomer ? 'customer-message' : 'agent-message';
+            const timeFormatted = new Date(message.created_at).toLocaleString('it-IT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="message-bubble ${bubbleClass}">
+                    <div class="message-header">
+                        <span class="sender-name">${escapeHtml(message.sender_name)}</span>
+                        <span class="message-time">${timeFormatted}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(message.message_text)}</div>
+                </div>
+            `;
+        }
+        
+        async function sendCustomerMessage(event, ticketId) {
+            event.preventDefault();
+            
+            const messageTextArea = document.getElementById('messageText');
+            const messageText = messageTextArea.value.trim();
+            
+            if (!messageText) return;
+            
+            const submitBtn = event.target.querySelector('.send-message-btn');
+            toggleButtonLoading(submitBtn, true);
+            
+            try {
+                const token = localStorage.getItem('customer_token');
+                const response = await fetch(`/api/customer/tickets/${ticketId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        message_text: messageText
+                    })
+                });
+                
+                if (response.ok) {
+                    messageTextArea.value = '';
+                    showNotification('Messaggio inviato con successo!', 'success');
+                    // Refresh messages
+                    refreshTicketMessages(ticketId);
+                } else {
+                    const result = await response.json();
+                    showNotification(result.error || 'Errore nell\\'invio del messaggio', 'error');
                 }
             } catch (error) {
                 showNotification('Errore di connessione', 'error');
@@ -664,10 +1149,41 @@
                 toggleButtonLoading(submitBtn, false);
             }
         }
-
-        function openTicketDetail(ticketId) {
-            // TODO: Implement ticket detail modal with chat
-            showNotification('Funzionalità in arrivo: dettagli ticket con chat', 'info');
+        
+        async function refreshTicketMessages(ticketId) {
+            try {
+                const token = localStorage.getItem('customer_token');
+                const response = await fetch(`/api/customer/tickets/${ticketId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const ticket = await response.json();
+                    const messagesContainer = document.getElementById('ticketMessages');
+                    
+                    if (ticket.messages && ticket.messages.length > 0) {
+                        messagesContainer.innerHTML = ticket.messages.map(msg => createMessageBubble(msg)).join('');
+                    } else {
+                        messagesContainer.innerHTML = '<div class="no-messages">Nessun messaggio ancora. Inizia la conversazione!</div>';
+                    }
+                    
+                    // Scroll to bottom
+                    setTimeout(() => {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Error refreshing messages:', error);
+            }
+        }
+        
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
         }
 
         function closeTicketDetailModal() {
