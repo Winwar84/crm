@@ -468,99 +468,97 @@
             margin-top: 15px;
         }
 
-        /* Enhanced Customer Ticket Modal */
+        /* Enhanced Customer Ticket Modal - Full Screen */
         .customer-ticket-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
             z-index: 10000;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 0;
         }
         
         .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
+            display: none; /* Rimuove overlay cliccabile per fullscreen */
         }
         
         .modal-content-wrapper {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            max-width: 900px;
+            background: var(--dark-bg);
             width: 100%;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-template-rows: auto 1fr;
             overflow: hidden;
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.5),
-                0 0 100px rgba(0, 255, 255, 0.1);
-            position: relative;
-            z-index: 10001;
         }
         
         .modal-header {
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
             color: white;
-            padding: 20px 30px;
+            padding: 25px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--neon-cyan);
+            grid-column: 1 / -1;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
         }
         
         .modal-header h2 {
             margin: 0;
             font-family: 'Orbitron', monospace;
-            font-size: 1.5em;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            font-size: 1.8em;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
         
         .modal-close {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
-            font-size: 30px;
+            font-size: 24px;
             cursor: pointer;
             padding: 0;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s ease;
+            font-weight: bold;
         }
         
         .modal-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(90deg);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
         }
         
         .ticket-detail-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0;
+            display: contents; /* Permette ai figli di partecipare al grid */
         }
         
-        /* Ticket Detail Sections */
-        .ticket-detail-header {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 25px 30px;
-            margin: 0;
+        /* Sidebar Info Ticket */
+        .ticket-info-sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-right: 2px solid var(--border-color);
+            padding: 30px;
+            overflow-y: auto;
+            border-bottom: none;
+        }
+        
+        .ticket-info-sidebar h3 {
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2em;
+            margin: 0 0 20px 0;
+            text-shadow: 0 0 10px var(--neon-cyan);
         }
         
         .ticket-detail-info {
@@ -581,11 +579,25 @@
             min-width: 80px;
         }
         
-        .ticket-detail-description {
+        .ticket-description-section {
             background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 25px 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .ticket-description-section h4 {
+            color: var(--text-primary);
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+        }
+        
+        .ticket-description-section p {
+            color: var(--text-secondary);
+            line-height: 1.6;
             margin: 0;
+            white-space: pre-wrap;
         }
         
         .ticket-detail-description h4 {
@@ -600,15 +612,14 @@
             white-space: pre-wrap;
         }
         
-        /* Chat Section Styles */
+        /* Chat Section Styles - Main Area */
         .ticket-chat-section {
             background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 25px 30px;
-            height: 450px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            margin: 0;
+            height: 100%;
+            border-left: 2px solid var(--border-color);
         }
         
         .chat-header {
@@ -634,10 +645,11 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 10px 0;
+            padding: 20px 0;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+            min-height: 0; /* Permette scroll corretto */
         }
         
         .no-messages {
@@ -659,6 +671,15 @@
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
             color: white;
             border-bottom-right-radius: 8px;
+            border: 2px solid transparent;
+        }
+        
+        /* Light mode override for customer messages */
+        [data-theme="light"] .customer-message {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            border: 2px solid #0066cc;
+            box-shadow: 0 2px 10px rgba(0, 102, 204, 0.3);
         }
         
         .agent-message {
@@ -667,6 +688,13 @@
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             border-bottom-left-radius: 8px;
+        }
+        
+        /* Light mode override for agent messages */
+        [data-theme="light"] .agent-message {
+            background: rgba(248, 249, 250, 0.9);
+            border: 2px solid #dee2e6;
+            color: #212529;
         }
         
         .message-header {
@@ -727,6 +755,19 @@
             background: rgba(0, 255, 255, 0.05);
         }
         
+        /* Light mode override for textarea */
+        [data-theme="light"] .message-form textarea {
+            background: white;
+            border: 2px solid #dee2e6;
+            color: #212529;
+        }
+        
+        [data-theme="light"] .message-form textarea:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 10px rgba(0, 102, 204, 0.2);
+            background: rgba(0, 102, 204, 0.05);
+        }
+        
         .send-message-btn {
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
             color: white;
@@ -751,48 +792,78 @@
             transform: none;
         }
 
+        /* Info Cards nel Sidebar */
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card h4 {
+            color: var(--text-primary);
+            margin: 0 0 15px 0;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            color: var(--text-primary);
+            font-size: 0.9em;
+            text-align: right;
+        }
+        
         @media (max-width: 768px) {
-            .customer-nav {
-                flex-direction: column;
-                gap: 15px;
+            .modal-content-wrapper {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+            
+            .ticket-info-sidebar {
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+                max-height: 200px;
+                padding: 20px;
+            }
+            
+            .ticket-chat-section {
+                border-left: none;
+                border-top: 2px solid var(--border-color);
+            }
+            
+            .info-card {
+                margin-bottom: 15px;
                 padding: 15px;
             }
             
-            .welcome-card {
-                flex-direction: column;
-                gap: 20px;
-                text-align: center;
-            }
-            
-            .customer-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .ticket-detail-info {
-                grid-template-columns: 1fr;
-            }
-            
-            .message-bubble {
-                max-width: 95%;
-            }
-            
-            .ticket-chat-section {
-                height: 350px;
-            }
-            
-            .modal-content-wrapper {
-                margin: 10px;
-                max-height: 95vh;
-            }
-            
             .modal-header {
-                padding: 15px 20px;
+                padding: 20px;
             }
             
-            .ticket-detail-header,
-            .ticket-detail-description,
-            .ticket-chat-section {
-                padding: 20px;
+            .modal-header h2 {
+                font-size: 1.4em;
             }
         }
     </style>
@@ -1155,41 +1226,46 @@
             const priorityClass = `priority-${ticket.priority.toLowerCase()}`;
             
             contentEl.innerHTML = `
-                <div class="ticket-detail-header">
-                    <div class="ticket-detail-info">
-                        <div class="ticket-detail-row">
-                            <span class="label">ID:</span>
-                            <span class="ticket-id">#${ticket.id}</span>
+                <div class="ticket-info-sidebar">
+                    <h3>📋 Informazioni Ticket</h3>
+                    
+                    <div class="info-card">
+                        <h4>🎫 Dettagli</h4>
+                        <div class="info-row">
+                            <span class="info-label">ID:</span>
+                            <span class="info-value ticket-id">#${ticket.id}</span>
                         </div>
-                        <div class="ticket-detail-row">
-                            <span class="label">Stato:</span>
-                            <span class="ticket-status ${statusClass}">${ticket.status}</span>
+                        <div class="info-row">
+                            <span class="info-label">Stato:</span>
+                            <span class="info-value"><span class="ticket-status ${statusClass}">${ticket.status}</span></span>
                         </div>
-                        <div class="ticket-detail-row">
-                            <span class="label">Priorità:</span>
-                            <span class="priority ${priorityClass}">${ticket.priority}</span>
+                        <div class="info-row">
+                            <span class="info-label">Priorità:</span>
+                            <span class="info-value"><span class="priority ${priorityClass}">${ticket.priority}</span></span>
                         </div>
-                        <div class="ticket-detail-row">
-                            <span class="label">Creato:</span>
-                            <span>${formatDate(ticket.created_at)}</span>
+                        <div class="info-row">
+                            <span class="info-label">Creato:</span>
+                            <span class="info-value">${formatDate(ticket.created_at)}</span>
                         </div>
                         ${ticket.assigned_to ? `
-                        <div class="ticket-detail-row">
-                            <span class="label">Assegnato a:</span>
-                            <span>${ticket.assigned_to}</span>
+                        <div class="info-row">
+                            <span class="info-label">Assegnato a:</span>
+                            <span class="info-value">${ticket.assigned_to}</span>
                         </div>
                         ` : ''}
                     </div>
-                </div>
-                
-                <div class="ticket-detail-description">
-                    <h4>Descrizione</h4>
-                    <p>${escapeHtml(ticket.description)}</p>
+                    
+                    <div class="info-card">
+                        <h4>📝 Descrizione</h4>
+                        <div class="ticket-description-text" style="color: var(--text-secondary); line-height: 1.5; font-size: 0.9em;">
+                            ${escapeHtml(ticket.description)}
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="ticket-chat-section">
                     <div class="chat-header">
-                        <h4>💬 Conversazione</h4>
+                        <h4>💬 Conversazione con il Supporto</h4>
                         <button onclick="refreshTicketMessages(${ticket.id})" class="refresh-chat-btn">
                             🔄 Aggiorna
                         </button>
@@ -1278,7 +1354,7 @@
                     // Immediate refresh after sending message
                     setTimeout(() => {
                         refreshTicketMessages(ticketId);
-                    }, 500);
+                    }, 300);
                 } else {
                     const result = await response.json();
                     showNotification(result.error || 'Errore nell\'invio del messaggio', 'error');
@@ -1294,7 +1370,6 @@
             try {
                 const token = customerAuth.getToken() || localStorage.getItem('customer_token');
                 
-                // USA API DIRETTA per messaggi - più veloce
                 const response = await fetch(`/api/customer/tickets/${ticketId}/messages`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1319,7 +1394,50 @@
                     }, 50);
                 }
             } catch (error) {
-                // Refresh silenzioso - non mostrare errori
+                // Silent error handling
+            }
+        }
+        
+        async function refreshTicketMessagesSilently(ticketId) {
+            try {
+                const token = customerAuth.getToken() || localStorage.getItem('customer_token');
+                const messagesContainer = document.getElementById('ticketMessages');
+                
+                if (!messagesContainer) return;
+                
+                // Store current scroll position
+                const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 50;
+                
+                const response = await fetch(`/api/customer/tickets/${ticketId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (response.ok) {
+                    const messages = await response.json();
+                    const currentMessageCount = messagesContainer.children.length;
+                    
+                    // Only update if there are new messages
+                    if (messages && messages.length !== currentMessageCount) {
+                        if (messages.length > 0) {
+                            messagesContainer.innerHTML = messages.map(msg => createMessageBubble(msg)).join('');
+                        } else {
+                            messagesContainer.innerHTML = '<div class="no-messages">Nessun messaggio ancora. Inizia la conversazione!</div>';
+                        }
+                        
+                        // Only scroll if user was already at bottom
+                        if (wasAtBottom) {
+                            setTimeout(() => {
+                                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                            }, 50);
+                        }
+                    }
+                }
+            } catch (error) {
+                // Completely silent - no logs, no errors
             }
         }
         
@@ -1340,14 +1458,14 @@
             stopCustomerChatAutoRefresh();
             
             CUSTOMER.ticketId = ticketId;
-            // Auto-refresh silenzioso ogni 3 secondi
+            // Auto-refresh silenzioso ogni 5 secondi per ridurre il disturbo
             CUSTOMER.chatInterval = setInterval(() => {
                 if (CUSTOMER.ticketId === ticketId && document.getElementById('ticketDetailModal').style.display !== 'none') {
-                    refreshTicketMessages(ticketId);
+                    refreshTicketMessagesSilently(ticketId);
                 } else {
                     stopCustomerChatAutoRefresh();
                 }
-            }, 3000);
+            }, 5000);
         }
         
         function stopCustomerChatAutoRefresh() {
