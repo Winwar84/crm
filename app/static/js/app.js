@@ -176,13 +176,13 @@ function initFormChangeTracking() {
                 return;
             }
             
-            // Only mark dirty for actual data entry forms
+            // Only mark dirty for actual data entry forms, exclude login/register forms
             if (form && (
                 form.id.includes('Form') || 
                 form.id.includes('ticket') ||
                 form.id.includes('customer') ||
                 form.id.includes('agent')
-            )) {
+            ) && !form.id.includes('Login') && !form.id.includes('Register')) {
                 markFormDirty();
             }
         }

@@ -455,6 +455,9 @@
                     return;
                 }
                 
+                // Remove confirm_password before sending to backend
+                delete data.confirm_password;
+                
                 const registerBtn = document.getElementById('registerBtn');
                 toggleButtonLoading(registerBtn, true);
                 
