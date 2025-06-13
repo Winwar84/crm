@@ -1338,7 +1338,7 @@ def customer_ticket_detail(ticket_id):
 @app.route('/api/customer/tickets/<int:ticket_id>/messages', methods=['GET', 'POST'])
 @customer_token_required
 def customer_ticket_messages(ticket_id):
-    """Aggiunge messaggio del cliente al ticket"""
+    """Gestisce messaggi del ticket per il cliente"""
     try:
         customer_id = request.current_customer['customer_id']
         
@@ -1351,33 +1351,43 @@ def customer_ticket_messages(ticket_id):
         if not tickets:
             return jsonify({'error': 'Ticket non trovato'}), 404
         
-        data = request.json
-        message_data = {
-            'ticket_id': ticket_id,
-            'sender_type': 'customer',
-            'sender_name': request.current_customer['customer_name'],
-            'sender_email': request.current_customer['customer_email'],
-            'message_text': data['message_text'],
-            'is_internal': False
-        }
+        if request.method == 'GET':
+            # Recupera SOLO i messaggi - API veloce per refresh
+            messages = get_from_supabase('ticket_messages', 
+                                       filters={'ticket_id': ticket_id},
+                                       select='*',
+                                       order_by={'created_at': 'asc'})
+            return jsonify(messages if messages else [])
         
-        result = save_to_supabase('ticket_messages', message_data)
-        
-        if result:
-            # Invia notifica agli agenti
-            ticket = tickets[0]
-            try:
-                EmailService.send_ticket_message_to_agents(ticket, result[0] if isinstance(result, list) else result)
-            except Exception as e:
-                print(f"Errore nell'invio notifica agenti: {e}")
+        elif request.method == 'POST':
+            # Aggiunge nuovo messaggio
+            data = request.json
+            message_data = {
+                'ticket_id': ticket_id,
+                'sender_type': 'customer',
+                'sender_name': request.current_customer['customer_name'],
+                'sender_email': request.current_customer['customer_email'],
+                'message_text': data['message_text'],
+                'is_internal': False
+            }
             
-            return jsonify({'message': 'Messaggio inviato con successo'})
-        else:
-            return jsonify({'error': 'Errore nell\'invio messaggio'}), 500
+            result = save_to_supabase('ticket_messages', message_data)
+            
+            if result:
+                # Invia notifica agli agenti
+                ticket = tickets[0]
+                try:
+                    EmailService.send_ticket_message_to_agents(ticket, result[0] if isinstance(result, list) else result)
+                except Exception as e:
+                    print(f"Errore nell'invio notifica agenti: {e}")
+                
+                return jsonify({'message': 'Messaggio inviato con successo'})
+            else:
+                return jsonify({'error': 'Errore nell\'invio messaggio'}), 500
             
     except Exception as e:
-        print(f"Errore nell'aggiunta messaggio: {e}")
-        return jsonify({'error': 'Errore nell\'invio messaggio'}), 500
+        print(f"Errore gestione messaggi cliente: {e}")
+        return jsonify({'error': 'Errore nell\'operazione'}), 500
 
 # Health check endpoint
 @app.route('/health')

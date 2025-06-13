@@ -1007,8 +1007,11 @@ function checkAuthentication() {
     const token = localStorage.getItem('user_token');
     const userData = localStorage.getItem('current_user');
     
-    // Se siamo nelle pagine di login o registrazione, non fare controlli
-    if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+    // Se siamo nelle pagine di login o registrazione (admin o customer), non fare controlli
+    if (window.location.pathname === '/login' || 
+        window.location.pathname === '/register' || 
+        window.location.pathname === '/customer-login' ||
+        window.location.pathname === '/customer-dashboard') {
         return;
     }
     
