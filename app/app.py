@@ -1335,9 +1335,9 @@ def customer_ticket_detail(ticket_id):
         print(f"Errore nel recupero dettagli ticket: {e}")
         return jsonify({'error': 'Errore nel caricamento dettagli'}), 500
 
-@app.route('/api/customer/tickets/<int:ticket_id>/messages', methods=['POST'])
+@app.route('/api/customer/tickets/<int:ticket_id>/messages', methods=['GET', 'POST'])
 @customer_token_required
-def customer_add_message(ticket_id):
+def customer_ticket_messages(ticket_id):
     """Aggiunge messaggio del cliente al ticket"""
     try:
         customer_id = request.current_customer['customer_id']

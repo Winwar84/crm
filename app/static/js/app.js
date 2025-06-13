@@ -2988,8 +2988,10 @@ async function sendTicketMessage(event, ticketId) {
             document.getElementById('messageText').value = '';
             document.getElementById('isInternalMessage').checked = false;
             
-            // Reload messages
-            await loadTicketMessages(ticketId);
+            // Immediate reload messages
+            setTimeout(async () => {
+                await loadTicketMessages(ticketId);
+            }, 300);
             
             showNotification(
                 isInternal ? 'Nota interna aggiunta' : 'Messaggio inviato al cliente', 
@@ -3039,21 +3041,21 @@ function startMessageAutoRefresh(ticketId) {
     // Set current ticket ID
     currentTicketId = ticketId;
     
-    // Start new interval - check every 60 seconds (reduced to prevent dashboard flickering)
+    // Start new interval - check every 3 seconds for real-time chat
     autoRefreshInterval = setInterval(() => {
         if (currentTicketId === ticketId && document.getElementById('ticketDetailsModal').style.display === 'block') {
             // Only refresh if modal is still open and not being edited
             const isEditing = document.getElementById('editableTicketDetailsForm');
             if (!isEditing) {
-                console.log(`🔄 Caricamento messaggi ticket ${ticketId} per auto-refresh`);
+                console.log(`💬 Auto-refresh messaggi ticket ${ticketId}`);
                 loadTicketMessages(ticketId);
             }
         } else {
             stopMessageAutoRefresh();
         }
-    }, 60000);
+    }, 3000);
     
-    console.log(`🔄 Auto-refresh avviato per ticket ${ticketId} (ogni 60 secondi)`);
+    console.log(`💬 Auto-refresh avviato per ticket ${ticketId} (ogni 3 secondi)`);
 }
 
 function stopMessageAutoRefresh() {

@@ -411,9 +411,15 @@
                     const data = await response.json();
                     
                     if (response.ok) {
-                        // Save customer token
+                        // Save customer token in isolated storage
                         localStorage.setItem('customer_token', data.token);
                         localStorage.setItem('customer_data', JSON.stringify(data.customer));
+                        
+                        // Also save in isolated namespace for coexistence
+                        if (typeof customerStorage !== 'undefined') {
+                            customerStorage.set('token', data.token);
+                            customerStorage.set('data', JSON.stringify(data.customer));
+                        }
                         
                         showNotification('Accesso effettuato con successo!', 'success');
                         

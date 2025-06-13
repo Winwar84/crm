@@ -711,6 +711,8 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
         let currentCustomer = null;
+        let customerChatInterval = null;
+        let currentTicketId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Customer Dashboard v2.8.1 loaded');
@@ -763,34 +765,43 @@
         function initCustomerDashboard() {
             console.log('🚀 Initializing customer dashboard...');
             
-            // Clear any admin session first
-            const adminToken = localStorage.getItem('user_token');
-            if (adminToken) {
-                console.log('⚠️ Admin session detected, clearing...');
-                localStorage.removeItem('user_token');
-                localStorage.removeItem('current_user');
-            }
-            
-            // Check customer authentication
-            const token = localStorage.getItem('customer_token');
-            const customerData = localStorage.getItem('customer_data');
+            // IMPORTANTE: NON rimuovere token admin - coesistenza!
+            // Check customer authentication con namespace separato
+            const token = customerStorage.get('token');
+            const customerData = customerStorage.get('data');
             
             console.log('🔑 Customer token present:', !!token);
             console.log('👤 Customer data present:', !!customerData);
+            console.log('🔧 Admin session preserved:', !!localStorage.getItem('user_token'));
             
-            if (!token || !customerData) {
+            // Migra da vecchio storage se necessario
+            if (!token && customerAuth.getToken() || localStorage.getItem('customer_token')) {
+                console.log('📦 Migrating customer session to isolated storage...');
+                customerStorage.set('token', customerAuth.getToken() || localStorage.getItem('customer_token'));
+                customerStorage.set('data', localStorage.getItem('customer_data'));
+                // Mantieni i vecchi per compatibilità temporanea
+            }
+            
+            const finalToken = token || customerAuth.getToken() || localStorage.getItem('customer_token');
+            const finalData = customerData || localStorage.getItem('customer_data');
+            
+            if (!finalToken || !finalData) {
                 console.log('❌ Missing customer authentication, redirecting to login');
                 window.location.href = '/customer-login';
                 return;
             }
             
             try {
-                currentCustomer = JSON.parse(customerData);
+                currentCustomer = JSON.parse(finalData);
                 console.log('✅ Customer loaded:', {
                     id: currentCustomer.id,
                     name: currentCustomer.name,
                     email: currentCustomer.email
                 });
+                
+                // Aggiorna storage isolato
+                customerStorage.set('token', finalToken);
+                customerStorage.set('data', finalData);
             } catch (error) {
                 console.error('❌ Error parsing customer data:', error);
                 window.location.href = '/customer-login';
@@ -809,7 +820,11 @@
                 console.error('❌ New ticket button not found!');
             }
             
-            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🚪 Customer logout button clicked');
+                logout();
+            });
             document.getElementById('statusFilter').addEventListener('change', filterTickets);
             document.getElementById('newTicketForm').addEventListener('submit', submitNewTicket);
             
@@ -829,7 +844,7 @@
         async function loadCustomerTickets() {
             console.log('📊 Loading customer tickets...');
             try {
-                const token = localStorage.getItem('customer_token');
+                const token = customerAuth.getToken() || customerAuth.getToken() || localStorage.getItem('customer_token');
                 console.log('🔑 Token for tickets request:', token ? 'Present' : 'Missing');
                 
                 const response = await fetch('/api/customer/tickets', {
@@ -975,7 +990,7 @@
             toggleButtonLoading(submitBtn, true);
             
             try {
-                const token = localStorage.getItem('customer_token');
+                const token = customerAuth.getToken() || localStorage.getItem('customer_token');
                 console.log('🔑 Using token:', token ? 'Present' : 'Missing');
                 
                 const response = await fetch('/api/customer/tickets', {
@@ -1009,7 +1024,7 @@
 
         async function openTicketDetail(ticketId) {
             try {
-                const token = localStorage.getItem('customer_token');
+                const token = customerAuth.getToken() || localStorage.getItem('customer_token');
                 const response = await fetch(`/api/customer/tickets/${ticketId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -1020,6 +1035,9 @@
                     const ticket = await response.json();
                     displayTicketDetail(ticket);
                     document.getElementById('ticketDetailModal').style.display = 'flex';
+                    
+                    // Avvia auto-refresh messaggi ogni 3 secondi
+                    startCustomerChatAutoRefresh(ticketId);
                 } else {
                     if (response.status === 401) {
                         logout();
@@ -1149,7 +1167,7 @@
             toggleButtonLoading(submitBtn, true);
             
             try {
-                const token = localStorage.getItem('customer_token');
+                const token = customerAuth.getToken() || localStorage.getItem('customer_token');
                 const response = await fetch(`/api/customer/tickets/${ticketId}/messages`, {
                     method: 'POST',
                     headers: {
@@ -1164,8 +1182,10 @@
                 if (response.ok) {
                     messageTextArea.value = '';
                     showNotification('Messaggio inviato con successo!', 'success');
-                    // Refresh messages
-                    refreshTicketMessages(ticketId);
+                    // Immediate refresh after sending message
+                    setTimeout(() => {
+                        refreshTicketMessages(ticketId);
+                    }, 500);
                 } else {
                     const result = await response.json();
                     showNotification(result.error || 'Errore nell\'invio del messaggio', 'error');
@@ -1179,27 +1199,33 @@
         
         async function refreshTicketMessages(ticketId) {
             try {
-                const token = localStorage.getItem('customer_token');
-                const response = await fetch(`/api/customer/tickets/${ticketId}`, {
+                const token = customerAuth.getToken() || localStorage.getItem('customer_token');
+                
+                // USA API DIRETTA per messaggi - più veloce
+                const response = await fetch(`/api/customer/tickets/${ticketId}/messages`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
                     }
                 });
                 
                 if (response.ok) {
-                    const ticket = await response.json();
+                    const messages = await response.json();
                     const messagesContainer = document.getElementById('ticketMessages');
                     
-                    if (ticket.messages && ticket.messages.length > 0) {
-                        messagesContainer.innerHTML = ticket.messages.map(msg => createMessageBubble(msg)).join('');
+                    if (messages && messages.length > 0) {
+                        messagesContainer.innerHTML = messages.map(msg => createMessageBubble(msg)).join('');
                     } else {
                         messagesContainer.innerHTML = '<div class="no-messages">Nessun messaggio ancora. Inizia la conversazione!</div>';
                     }
                     
-                    // Scroll to bottom
+                    // Scroll to bottom immediately
                     setTimeout(() => {
                         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }, 100);
+                    }, 50);
+                } else {
+                    console.error('Failed to refresh messages:', response.status);
                 }
             } catch (error) {
                 console.error('Error refreshing messages:', error);
@@ -1215,20 +1241,51 @@
 
         function closeTicketDetailModal() {
             document.getElementById('ticketDetailModal').style.display = 'none';
+            stopCustomerChatAutoRefresh();
+        }
+        
+        function startCustomerChatAutoRefresh(ticketId) {
+            // Stop any existing interval
+            stopCustomerChatAutoRefresh();
+            
+            currentTicketId = ticketId;
+            console.log(`💬 Starting customer chat auto-refresh for ticket ${ticketId} (every 3 seconds)`);
+            
+            customerChatInterval = setInterval(() => {
+                if (currentTicketId === ticketId && document.getElementById('ticketDetailModal').style.display === 'flex') {
+                    console.log(`💬 Auto-refresh customer messages for ticket ${ticketId}`);
+                    refreshTicketMessages(ticketId);
+                } else {
+                    stopCustomerChatAutoRefresh();
+                }
+            }, 3000);
+        }
+        
+        function stopCustomerChatAutoRefresh() {
+            if (customerChatInterval) {
+                console.log('⏹️ Stopping customer chat auto-refresh');
+                clearInterval(customerChatInterval);
+                customerChatInterval = null;
+                currentTicketId = null;
+            }
         }
 
         function logout() {
             console.log('🚪 Customer logout initiated');
+            // SOLO rimuove dati cliente - preserva admin session
+            customerStorage.remove('token');
+            customerStorage.remove('data');
             localStorage.removeItem('customer_token');
             localStorage.removeItem('customer_data');
-            // Also clear any admin tokens that might be present
-            localStorage.removeItem('user_token');
-            localStorage.removeItem('current_user');
+            // NON toccare i token admin per coesistenza!
+            console.log('✅ Customer session cleared, admin session preserved');
             window.location.href = '/customer-login';
         }
         
-        // Override global logout function for customer dashboard
-        window.logout = logout;
+        // Override SOLO in customer mode per evitare conflitti
+        if (window.CUSTOMER_MODE) {
+            window.customerLogout = logout;
+        }
 
         function formatDate(dateString) {
             const date = new Date(dateString);
